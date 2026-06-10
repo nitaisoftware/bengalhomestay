@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bengal Homestay — Authentic Stays Across West Bengal</title>
+  <meta name="description" content="Discover authentic homestays across West Bengal — from Darjeeling mountains to Sundarbans mangroves. Book unique local experiences with verified hosts." />
+  <meta name="keywords" content="West Bengal homestay, Darjeeling homestay, Sundarbans homestay, Bengal tourism, hill station stay, eco tourism Bengal" />
+  <meta property="og:title" content="Bengal Homestay — Authentic Stays Across West Bengal" />
+  <meta property="og:description" content="Discover authentic homestays across 22 districts of West Bengal." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bengalhomestay.com" />
+  <link rel="canonical" href="https://bengalhomestay.com" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: { 50:'#f0faf4', 100:'#dcf5e7', 200:'#bbead0', 300:'#86d5ae', 400:'#4db885', 500:'#28956a', 600:'#1a7a54', 700:'#156243', 800:'#124f37', 900:'#0e3f2c' },
+            gold:   { 50:'#fdf9ed', 100:'#faf0d0', 200:'#f5de9a', 300:'#efc75f', 400:'#e8b031', 500:'#d4921a', 600:'#b87213', 700:'#8f5110', 800:'#743f12', 900:'#5e3412' },
+            bengal: { 50:'#fef7f0', 100:'#fdeedd', 200:'#fad9b5', 300:'#f6bd82', 400:'#f1994e', 500:'#ec7c2c', 600:'#da601e', 700:'#b54818', 800:'#8f3817', 900:'#732e15' }
+          },
+          fontFamily: { serif: ['Playfair Display','serif'], sans: ['Nunito','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Nunito', sans-serif; }
+    .hero-bg {
+      background: linear-gradient(135deg, rgba(14,63,44,0.82) 0%, rgba(21,98,67,0.65) 50%, rgba(212,146,26,0.45) 100%),
+        url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1600&q=80') center/cover no-repeat;
+    }
+    .card-hover { transition: transform .25s ease, box-shadow .25s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.15); }
+    .category-card { transition: all .25s ease; }
+    .category-card:hover .cat-icon { transform: scale(1.15); }
+    .cat-icon { transition: transform .25s ease; }
+    .search-glass { backdrop-filter: blur(12px); background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); }
+    .nav-scroll { backdrop-filter: blur(16px); background: rgba(255,255,255,0.95); }
+    .district-chip:hover { background: #1a7a54; color: #fff; }
+    .step-line::after { content:''; position:absolute; top:50%; left:calc(50% + 36px); width:calc(100% - 72px); height:2px; background: linear-gradient(90deg,#28956a,#d4921a); }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .float { animation: float 3s ease-in-out infinite; }
+    .tag-pill { background: rgba(40,149,106,0.1); color: #156243; border: 1px solid rgba(40,149,106,0.25); }
+    .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation: shimmer 1.4s infinite; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+</head>
+<body class="bg-white text-gray-800">
+
+<!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4 px-4 md:px-8">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <span class="text-2xl font-serif font-bold text-white drop-shadow" id="logo-text">Bengal Homestay</span>
+      <span class="text-gold-300 text-xs font-sans font-medium drop-shadow" id="logo-tag">.com</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="/homestays" class="text-white/90 hover:text-white font-medium text-sm nav-link transition-colors" id="nav-stays">Browse Stays</a>
+      <a href="/destinations" class="text-white/90 hover:text-white font-medium text-sm nav-link transition-colors" id="nav-dest">Destinations</a>
+      <a href="/host" class="text-white/90 hover:text-white font-medium text-sm nav-link transition-colors" id="nav-host">List Your Property</a>
+      <a href="/login" class="bg-white/15 hover:bg-white/25 text-white border border-white/30 px-4 py-2 rounded-full text-sm font-semibold transition-all" id="nav-login">Login</a>
+      <a href="/register" class="bg-gold-500 hover:bg-gold-400 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all shadow" id="nav-reg">Sign Up Free</a>
+    </div>
+    <button id="mob-menu-btn" class="md:hidden text-white text-xl"><i class="fas fa-bars"></i></button>
+  </div>
+  <!-- Mobile menu -->
+  <div id="mob-menu" class="hidden md:hidden mt-3 bg-forest-900/95 rounded-2xl p-4 space-y-3 mx-2">
+    <a href="/homestays" class="block text-white/90 py-2 px-3 rounded-lg hover:bg-white/10 text-sm font-medium">Browse Stays</a>
+    <a href="/destinations" class="block text-white/90 py-2 px-3 rounded-lg hover:bg-white/10 text-sm font-medium">Destinations</a>
+    <a href="/host" class="block text-white/90 py-2 px-3 rounded-lg hover:bg-white/10 text-sm font-medium">List Your Property</a>
+    <div class="flex gap-2 pt-1">
+      <a href="/login" class="flex-1 text-center bg-white/15 text-white border border-white/30 py-2 rounded-full text-sm font-semibold">Login</a>
+      <a href="/register" class="flex-1 text-center bg-gold-500 text-white py-2 rounded-full text-sm font-semibold">Sign Up</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ HERO ════════════════════════════════ -->
+<section class="hero-bg min-h-screen flex flex-col justify-center relative overflow-hidden">
+  <!-- Floating badges -->
+  <div class="absolute top-28 right-8 md:right-16 float hidden md:block">
+    <div class="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl px-4 py-3 text-white text-center shadow-lg">
+      <div class="text-2xl font-bold font-serif">500+</div>
+      <div class="text-xs opacity-80">Verified Homestays</div>
+    </div>
+  </div>
+  <div class="absolute bottom-32 right-12 float hidden md:block" style="animation-delay:.8s">
+    <div class="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl px-4 py-3 text-white text-center shadow-lg">
+      <div class="text-2xl font-bold font-serif">22</div>
+      <div class="text-xs opacity-80">Districts Covered</div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 md:px-8 pt-28 pb-16 w-full">
+    <!-- Headline -->
+    <div class="max-w-3xl mb-10">
+      <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur border border-white/25 rounded-full px-4 py-1.5 text-white text-sm mb-5">
+        <i class="fas fa-map-marker-alt text-gold-300"></i>
+        <span>West Bengal's #1 Homestay Directory</span>
+      </div>
+      <h1 class="font-serif text-4xl md:text-6xl font-bold text-white leading-tight mb-4">
+        Experience the Soul<br/>
+        <span class="text-gold-300">of Bengal</span>
+      </h1>
+      <p class="text-white/85 text-lg md:text-xl font-light max-w-xl">
+        From Darjeeling's misty mountains to Sundarbans' mangrove forests — discover authentic homestays with real Bengali families.
+      </p>
+    </div>
+
+    <!-- Search Card -->
+    <div class="search-glass rounded-3xl p-5 md:p-6 max-w-4xl">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <!-- District -->
+        <div class="bg-white/90 rounded-2xl px-4 py-3">
+          <label class="text-xs font-semibold text-forest-700 uppercase tracking-wider block mb-1"><i class="fas fa-map-marker-alt mr-1"></i>District</label>
+          <select class="w-full bg-transparent text-gray-800 text-sm font-medium focus:outline-none" id="search-district">
+            <option value="">All Districts</option>
+            <option>Darjeeling</option><option>Kalimpong</option><option>Jalpaiguri</option>
+            <option>Alipurduar</option><option>Cooch Behar</option><option>Malda</option>
+            <option>Murshidabad</option><option>Birbhum</option><option>Bankura</option>
+            <option>Purulia</option><option>Jhargram</option><option>Paschim Medinipur</option>
+            <option>Purba Medinipur</option><option>South 24 Parganas</option>
+            <option>North 24 Parganas</option><option>Nadia</option><option>Hooghly</option>
+            <option>Howrah</option><option>Kolkata</option>
+          </select>
+        </div>
+        <!-- Category -->
+        <div class="bg-white/90 rounded-2xl px-4 py-3">
+          <label class="text-xs font-semibold text-forest-700 uppercase tracking-wider block mb-1"><i class="fas fa-tag mr-1"></i>Category</label>
+          <select class="w-full bg-transparent text-gray-800 text-sm font-medium focus:outline-none" id="search-category">
+            <option value="">All Types</option>
+            <option>Wildlife</option><option>Heritage</option><option>Spiritual</option>
+            <option>Adventure</option><option>Rural</option><option>Nature</option>
+          </select>
+        </div>
+        <!-- Trip Length -->
+        <div class="bg-white/90 rounded-2xl px-4 py-3">
+          <label class="text-xs font-semibold text-forest-700 uppercase tracking-wider block mb-1"><i class="fas fa-calendar mr-1"></i>Trip Length</label>
+          <select class="w-full bg-transparent text-gray-800 text-sm font-medium focus:outline-none" id="search-duration">
+            <option value="">Any Duration</option>
+            <option value="1-2">1–2 Days</option>
+            <option value="3-4">3–4 Days</option>
+            <option value="5-6">5–6 Days</option>
+            <option value="7-10">7–10 Days</option>
+          </select>
+        </div>
+        <!-- Search Button -->
+        <button onclick="doSearch()" class="bg-forest-600 hover:bg-forest-500 text-white rounded-2xl px-6 py-3 font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-forest-600/30 active:scale-95">
+          <i class="fas fa-search text-sm"></i>
+          <span>Search Stays</span>
+        </button>
+      </div>
+      <!-- Quick tags -->
+      <div class="flex flex-wrap gap-2 mt-4">
+        <span class="text-white/70 text-xs self-center">Popular:</span>
+        <button onclick="quickSearch('Darjeeling')" class="bg-white/15 hover:bg-white/25 text-white text-xs px-3 py-1.5 rounded-full border border-white/20 transition-all">Darjeeling</button>
+        <button onclick="quickSearch('Sundarbans')" class="bg-white/15 hover:bg-white/25 text-white text-xs px-3 py-1.5 rounded-full border border-white/20 transition-all">Sundarbans</button>
+        <button onclick="quickSearch('Kalimpong')" class="bg-white/15 hover:bg-white/25 text-white text-xs px-3 py-1.5 rounded-full border border-white/20 transition-all">Kalimpong</button>
+        <button onclick="quickSearch('Digha')" class="bg-white/15 hover:bg-white/25 text-white text-xs px-3 py-1.5 rounded-full border border-white/20 transition-all">Digha Beach</button>
+        <button onclick="quickSearch('Murshidabad')" class="bg-white/15 hover:bg-white/25 text-white text-xs px-3 py-1.5 rounded-full border border-white/20 transition-all">Murshidabad</button>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="flex flex-wrap gap-6 mt-8 text-white/80 text-sm">
+      <span class="flex items-center gap-1.5"><i class="fas fa-check-circle text-gold-300"></i> Admin-verified listings</span>
+      <span class="flex items-center gap-1.5"><i class="fas fa-shield-alt text-gold-300"></i> Secure booking</span>
+      <span class="flex items-center gap-1.5"><i class="fas fa-star text-gold-300"></i> Reviewed by real guests</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ CATEGORIES ══════════════════════════════ -->
+<section class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="text-center mb-12">
+      <span class="text-forest-600 text-sm font-semibold uppercase tracking-widest">Explore by Interest</span>
+      <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 mt-2">What Kind of Journey?</h2>
+      <p class="text-gray-500 mt-3 max-w-xl mx-auto">Every corner of West Bengal tells a different story. Choose yours.</p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <!-- Wildlife -->
+      <a href="/homestays?group=wildlife" class="category-card bg-white rounded-2xl p-5 text-center shadow-sm hover:shadow-md border border-gray-100 cursor-pointer block">
+        <div class="cat-icon w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-paw text-2xl text-green-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 text-sm mb-1">Wildlife</h3>
+        <p class="text-xs text-gray-500">Sanctuaries & Parks</p>
+        <span class="text-xs text-green-600 font-medium mt-2 block">4 types</span>
+      </a>
+      <!-- Heritage -->
+      <a href="/homestays?group=heritage" class="category-card bg-white rounded-2xl p-5 text-center shadow-sm hover:shadow-md border border-gray-100 cursor-pointer block">
+        <div class="cat-icon w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-landmark text-2xl text-amber-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 text-sm mb-1">Heritage</h3>
+        <p class="text-xs text-gray-500">Forts & Monuments</p>
+        <span class="text-xs text-amber-600 font-medium mt-2 block">7 types</span>
+      </a>
+      <!-- Spiritual -->
+      <a href="/homestays?group=spiritual" class="category-card bg-white rounded-2xl p-5 text-center shadow-sm hover:shadow-md border border-gray-100 cursor-pointer block">
+        <div class="cat-icon w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-om text-2xl text-purple-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 text-sm mb-1">Spiritual</h3>
+        <p class="text-xs text-gray-500">Temples & Pilgrimages</p>
+        <span class="text-xs text-purple-600 font-medium mt-2 block">7 faiths</span>
+      </a>
+      <!-- Adventure -->
+      <a href="/homestays?group=adventure" class="category-card bg-white rounded-2xl p-5 text-center shadow-sm hover:shadow-md border border-gray-100 cursor-pointer block">
+        <div class="cat-icon w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-hiking text-2xl text-orange-500"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 text-sm mb-1">Adventure</h3>
+        <p class="text-xs text-gray-500">Trekking & Rafting</p>
+        <span class="text-xs text-orange-500 font-medium mt-2 block">9 activities</span>
+      </a>
+      <!-- Rural -->
+      <a href="/homestays?group=rural" class="category-card bg-white rounded-2xl p-5 text-center shadow-sm hover:shadow-md border border-gray-100 cursor-pointer block">
+        <div class="cat-icon w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-tractor text-2xl text-emerald-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 text-sm mb-1">Rural</h3>
+        <p class="text-xs text-gray-500">Agro & Eco Tourism</p>
+        <span class="text-xs text-emerald-600 font-medium mt-2 block">5 types</span>
+      </a>
+      <!-- Nature -->
+      <a href="/homestays?group=nature" class="category-card bg-white rounded-2xl p-5 text-center shadow-sm hover:shadow-md border border-gray-100 cursor-pointer block">
+        <div class="cat-icon w-14 h-14 rounded-2xl bg-sky-50 flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-mountain text-2xl text-sky-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 text-sm mb-1">Nature</h3>
+        <p class="text-xs text-gray-500">Hills, Beaches & Lakes</p>
+        <span class="text-xs text-sky-600 font-medium mt-2 block">5 types</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FEATURED HOMESTAYS ══════════════════════════ -->
+<section class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <span class="text-forest-600 text-sm font-semibold uppercase tracking-widest">Hand-Picked for You</span>
+        <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 mt-2">Featured Homestays</h2>
+      </div>
+      <a href="/homestays" class="hidden md:flex items-center gap-2 text-forest-600 hover:text-forest-800 font-semibold text-sm transition-colors">
+        View all <i class="fas fa-arrow-right text-xs"></i>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="featured-grid">
+      <!-- Card 1 -->
+      <div class="card-hover bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100">
+        <div class="relative h-56 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=75" alt="Mountain Homestay Darjeeling" class="w-full h-full object-cover" loading="lazy" />
+          <div class="absolute top-3 left-3"><span class="bg-gold-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow"><i class="fas fa-crown mr-1"></i>Premium</span></div>
+          <div class="absolute top-3 right-3"><button class="bg-white/80 hover:bg-white rounded-full w-8 h-8 flex items-center justify-center transition-all"><i class="far fa-heart text-gray-600 text-sm"></i></button></div>
+          <div class="absolute bottom-3 left-3"><span class="tag-pill text-xs px-2.5 py-1 rounded-full font-medium"><i class="fas fa-mountain mr-1"></i>Nature</span></div>
+        </div>
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-1">
+            <h3 class="font-bold text-gray-900 text-base leading-tight">Himalayan Mist Cottage</h3>
+            <div class="flex items-center gap-1 ml-2 flex-shrink-0"><i class="fas fa-star text-gold-500 text-xs"></i><span class="text-xs font-bold">4.9</span></div>
+          </div>
+          <p class="text-gray-500 text-sm flex items-center gap-1 mb-3"><i class="fas fa-map-marker-alt text-forest-500 text-xs"></i> Darjeeling, West Bengal</p>
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">Wi-Fi</span>
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">Breakfast</span>
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">Mountain View</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div><span class="text-forest-700 font-bold text-lg">₹1,800</span><span class="text-gray-400 text-xs"> / night</span></div>
+            <a href="/homestays/himalayan-mist-cottage-darjeeling" class="bg-forest-600 hover:bg-forest-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all">Book Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card-hover bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100">
+        <div class="relative h-56 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1586375300773-8384e3e4916f?w=600&q=75" alt="Sundarbans Eco Lodge" class="w-full h-full object-cover" loading="lazy" />
+          <div class="absolute top-3 right-3"><button class="bg-white/80 hover:bg-white rounded-full w-8 h-8 flex items-center justify-center transition-all"><i class="far fa-heart text-gray-600 text-sm"></i></button></div>
+          <div class="absolute bottom-3 left-3"><span class="tag-pill text-xs px-2.5 py-1 rounded-full font-medium"><i class="fas fa-paw mr-1"></i>Wildlife</span></div>
+        </div>
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-1">
+            <h3 class="font-bold text-gray-900 text-base leading-tight">Sundarbans Forest Lodge</h3>
+            <div class="flex items-center gap-1 ml-2 flex-shrink-0"><i class="fas fa-star text-gold-500 text-xs"></i><span class="text-xs font-bold">4.7</span></div>
+          </div>
+          <p class="text-gray-500 text-sm flex items-center gap-1 mb-3"><i class="fas fa-map-marker-alt text-forest-500 text-xs"></i> South 24 Parganas, WB</p>
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">Boat Safari</span>
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">All Meals</span>
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">River View</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div><span class="text-forest-700 font-bold text-lg">₹2,500</span><span class="text-gray-400 text-xs"> / night</span></div>
+            <a href="/homestays/sundarbans-forest-lodge" class="bg-forest-600 hover:bg-forest-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all">Book Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card-hover bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100">
+        <div class="relative h-56 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=600&q=75" alt="Heritage Haveli Murshidabad" class="w-full h-full object-cover" loading="lazy" />
+          <div class="absolute top-3 left-3"><span class="bg-gold-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow"><i class="fas fa-crown mr-1"></i>Premium</span></div>
+          <div class="absolute top-3 right-3"><button class="bg-white/80 hover:bg-white rounded-full w-8 h-8 flex items-center justify-center transition-all"><i class="far fa-heart text-gray-600 text-sm"></i></button></div>
+          <div class="absolute bottom-3 left-3"><span class="tag-pill text-xs px-2.5 py-1 rounded-full font-medium"><i class="fas fa-landmark mr-1"></i>Heritage</span></div>
+        </div>
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-1">
+            <h3 class="font-bold text-gray-900 text-base leading-tight">Nawab's Heritage Haveli</h3>
+            <div class="flex items-center gap-1 ml-2 flex-shrink-0"><i class="fas fa-star text-gold-500 text-xs"></i><span class="text-xs font-bold">4.8</span></div>
+          </div>
+          <p class="text-gray-500 text-sm flex items-center gap-1 mb-3"><i class="fas fa-map-marker-alt text-forest-500 text-xs"></i> Murshidabad, West Bengal</p>
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">Heritage Tour</span>
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">AC Rooms</span>
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">Parking</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div><span class="text-forest-700 font-bold text-lg">₹3,200</span><span class="text-gray-400 text-xs"> / night</span></div>
+            <a href="/homestays/nawabs-heritage-haveli-murshidabad" class="bg-forest-600 hover:bg-forest-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all">Book Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-8">
+      <a href="/homestays" class="inline-flex items-center gap-2 border-2 border-forest-600 text-forest-600 hover:bg-forest-600 hover:text-white px-8 py-3 rounded-full font-bold transition-all">
+        Explore All Homestays <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ DISTRICTS SECTION ════════════════════════════ -->
+<section class="py-20 bg-forest-900 relative overflow-hidden">
+  <div class="absolute inset-0 opacity-5" style="background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%221.5%22 fill=%22white%22/></svg>')"></div>
+  <div class="max-w-7xl mx-auto px-4 md:px-8 relative">
+    <div class="text-center mb-12">
+      <span class="text-gold-300 text-sm font-semibold uppercase tracking-widest">All 22 Districts</span>
+      <h2 class="font-serif text-3xl md:text-4xl font-bold text-white mt-2">Explore West Bengal</h2>
+      <p class="text-white/60 mt-3 max-w-xl mx-auto">Find homestays across every corner of the state.</p>
+    </div>
+    <div class="flex flex-wrap justify-center gap-3">
+      <a href="/homestays?district=Darjeeling" class="district-chip bg-white/10 hover:bg-forest-600 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-mountain text-xs text-gold-300"></i>Darjeeling</a>
+      <a href="/homestays?district=Kalimpong" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-tree text-xs text-gold-300"></i>Kalimpong</a>
+      <a href="/homestays?district=Jalpaiguri" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-leaf text-xs text-gold-300"></i>Jalpaiguri</a>
+      <a href="/homestays?district=Alipurduar" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-paw text-xs text-gold-300"></i>Alipurduar</a>
+      <a href="/homestays?district=Cooch+Behar" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Cooch Behar</a>
+      <a href="/homestays?district=Malda" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-landmark text-xs text-gold-300"></i>Malda</a>
+      <a href="/homestays?district=Murshidabad" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-mosque text-xs text-gold-300"></i>Murshidabad</a>
+      <a href="/homestays?district=Birbhum" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-music text-xs text-gold-300"></i>Birbhum</a>
+      <a href="/homestays?district=Bankura" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Bankura</a>
+      <a href="/homestays?district=Purulia" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-fire text-xs text-gold-300"></i>Purulia</a>
+      <a href="/homestays?district=Jhargram" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Jhargram</a>
+      <a href="/homestays?district=Paschim+Medinipur" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Paschim Medinipur</a>
+      <a href="/homestays?district=Purba+Medinipur" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-umbrella-beach text-xs text-gold-300"></i>Purba Medinipur</a>
+      <a href="/homestays?district=Howrah" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Howrah</a>
+      <a href="/homestays?district=Hooghly" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Hooghly</a>
+      <a href="/homestays?district=Nadia" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Nadia</a>
+      <a href="/homestays?district=North+24+Parganas" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">North 24 Parganas</a>
+      <a href="/homestays?district=South+24+Parganas" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-water text-xs text-gold-300"></i>South 24 Parganas</a>
+      <a href="/homestays?district=Kolkata" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5"><i class="fas fa-city text-xs text-gold-300"></i>Kolkata</a>
+      <a href="/homestays?district=Bardhaman" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Bardhaman</a>
+      <a href="/homestays?district=Uttar+Dinajpur" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Uttar Dinajpur</a>
+      <a href="/homestays?district=Dakshin+Dinajpur" class="district-chip bg-white/10 text-white border border-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all cursor-pointer">Dakshin Dinajpur</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ HOW IT WORKS ════════════════════════════════ -->
+<section class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="text-center mb-16">
+      <span class="text-forest-600 text-sm font-semibold uppercase tracking-widest">Simple Process</span>
+      <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 mt-2">How It Works</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+      <div class="text-center relative">
+        <div class="w-20 h-20 rounded-3xl bg-forest-50 flex items-center justify-center mx-auto mb-5 border-2 border-forest-100">
+          <i class="fas fa-search text-3xl text-forest-600"></i>
+        </div>
+        <div class="absolute -top-2 -right-2 md:top-0 md:right-0 w-8 h-8 bg-forest-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Search & Discover</h3>
+        <p class="text-gray-500 text-sm leading-relaxed">Browse homestays by district, category, price range, or let our proximity search find options near your destination.</p>
+      </div>
+      <div class="text-center relative">
+        <div class="w-20 h-20 rounded-3xl bg-gold-50 flex items-center justify-center mx-auto mb-5 border-2 border-gold-100">
+          <i class="fas fa-comments text-3xl text-gold-600"></i>
+        </div>
+        <div class="absolute -top-2 -right-2 md:top-0 md:right-0 w-8 h-8 bg-gold-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Connect with Host</h3>
+        <p class="text-gray-500 text-sm leading-relaxed">Send an inquiry directly to the verified host. Get instant responses about availability, local experiences, and pricing.</p>
+      </div>
+      <div class="text-center relative">
+        <div class="w-20 h-20 rounded-3xl bg-bengal-50 flex items-center justify-center mx-auto mb-5 border-2 border-bengal-100">
+          <i class="fas fa-home text-3xl text-bengal-600"></i>
+        </div>
+        <div class="absolute -top-2 -right-2 md:top-0 md:right-0 w-8 h-8 bg-bengal-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Stay & Experience</h3>
+        <p class="text-gray-500 text-sm leading-relaxed">Arrive, experience authentic Bengali hospitality, and leave a review to help other travellers discover this hidden gem.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ LIST YOUR PROPERTY CTA ═══════════════════════ -->
+<section class="py-20 bg-gradient-to-br from-forest-800 to-forest-900">
+  <div class="max-w-5xl mx-auto px-4 md:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+      <div>
+        <span class="text-gold-300 text-sm font-semibold uppercase tracking-widest">For Homestay Owners</span>
+        <h2 class="font-serif text-3xl md:text-4xl font-bold text-white mt-3 mb-4">List Your Property for Free</h2>
+        <p class="text-white/75 text-base leading-relaxed mb-6">Reach thousands of travellers looking for authentic Bengal experiences. Start with our free listing — upgrade to Premium for bookings, payments tracking, and analytics.</p>
+        <div class="space-y-3 mb-8">
+          <div class="flex items-center gap-3 text-white/85 text-sm"><i class="fas fa-check-circle text-gold-300 text-base flex-shrink-0"></i><span>Free listing with photos and amenities</span></div>
+          <div class="flex items-center gap-3 text-white/85 text-sm"><i class="fas fa-check-circle text-gold-300 text-base flex-shrink-0"></i><span>Premium dashboard with booking & payment tracking</span></div>
+          <div class="flex items-center gap-3 text-white/85 text-sm"><i class="fas fa-check-circle text-gold-300 text-base flex-shrink-0"></i><span>Priority placement in search results</span></div>
+          <div class="flex items-center gap-3 text-white/85 text-sm"><i class="fas fa-check-circle text-gold-300 text-base flex-shrink-0"></i><span>Verified host badge builds guest trust</span></div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="/host/register" class="bg-gold-500 hover:bg-gold-400 text-white px-6 py-3 rounded-full font-bold transition-all shadow-lg">List for Free <i class="fas fa-arrow-right ml-1"></i></a>
+          <a href="/host/pricing" class="bg-white/15 hover:bg-white/25 text-white border border-white/30 px-6 py-3 rounded-full font-bold transition-all">View Premium Plans</a>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white/10 border border-white/20 rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-white font-serif">500+</div>
+          <div class="text-white/60 text-sm mt-1">Listed Properties</div>
+        </div>
+        <div class="bg-white/10 border border-white/20 rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-gold-300 font-serif">22</div>
+          <div class="text-white/60 text-sm mt-1">Districts Covered</div>
+        </div>
+        <div class="bg-white/10 border border-white/20 rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-white font-serif">4.8★</div>
+          <div class="text-white/60 text-sm mt-1">Average Rating</div>
+        </div>
+        <div class="bg-gold-500/30 border border-gold-400/40 rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-gold-200 font-serif">Free</div>
+          <div class="text-white/60 text-sm mt-1">To Get Started</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FOOTER ════════════════════════════════════════ -->
+<footer class="bg-gray-900 text-white pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+      <!-- Brand -->
+      <div class="col-span-2 md:col-span-1">
+        <h3 class="font-serif text-xl font-bold mb-3">Bengal Homestay</h3>
+        <p class="text-gray-400 text-sm leading-relaxed mb-4">West Bengal's most trusted homestay directory. Connecting travellers with authentic local experiences since 2024.</p>
+        <div class="flex gap-3">
+          <a href="#" class="w-9 h-9 bg-white/10 hover:bg-forest-600 rounded-full flex items-center justify-center transition-all"><i class="fab fa-facebook-f text-sm"></i></a>
+          <a href="#" class="w-9 h-9 bg-white/10 hover:bg-forest-600 rounded-full flex items-center justify-center transition-all"><i class="fab fa-instagram text-sm"></i></a>
+          <a href="#" class="w-9 h-9 bg-white/10 hover:bg-forest-600 rounded-full flex items-center justify-center transition-all"><i class="fab fa-youtube text-sm"></i></a>
+          <a href="#" class="w-9 h-9 bg-white/10 hover:bg-forest-600 rounded-full flex items-center justify-center transition-all"><i class="fab fa-whatsapp text-sm"></i></a>
+        </div>
+      </div>
+      <!-- Explore -->
+      <div>
+        <h4 class="font-bold text-sm uppercase tracking-widest text-gray-300 mb-4">Explore</h4>
+        <ul class="space-y-2.5">
+          <li><a href="/homestays" class="text-gray-400 hover:text-white text-sm transition-colors">All Homestays</a></li>
+          <li><a href="/homestays?group=wildlife" class="text-gray-400 hover:text-white text-sm transition-colors">Wildlife Stays</a></li>
+          <li><a href="/homestays?group=heritage" class="text-gray-400 hover:text-white text-sm transition-colors">Heritage Stays</a></li>
+          <li><a href="/homestays?group=adventure" class="text-gray-400 hover:text-white text-sm transition-colors">Adventure Stays</a></li>
+          <li><a href="/homestays?group=nature" class="text-gray-400 hover:text-white text-sm transition-colors">Nature Stays</a></li>
+          <li><a href="/destinations" class="text-gray-400 hover:text-white text-sm transition-colors">Destinations</a></li>
+        </ul>
+      </div>
+      <!-- Host -->
+      <div>
+        <h4 class="font-bold text-sm uppercase tracking-widest text-gray-300 mb-4">For Hosts</h4>
+        <ul class="space-y-2.5">
+          <li><a href="/host/register" class="text-gray-400 hover:text-white text-sm transition-colors">List Your Property</a></li>
+          <li><a href="/host/pricing" class="text-gray-400 hover:text-white text-sm transition-colors">Premium Plans</a></li>
+          <li><a href="/host/dashboard" class="text-gray-400 hover:text-white text-sm transition-colors">Owner Dashboard</a></li>
+          <li><a href="/host/claim" class="text-gray-400 hover:text-white text-sm transition-colors">Claim Your Listing</a></li>
+          <li><a href="/host/help" class="text-gray-400 hover:text-white text-sm transition-colors">Host Support</a></li>
+        </ul>
+      </div>
+      <!-- Company -->
+      <div>
+        <h4 class="font-bold text-sm uppercase tracking-widest text-gray-300 mb-4">Company</h4>
+        <ul class="space-y-2.5">
+          <li><a href="/about" class="text-gray-400 hover:text-white text-sm transition-colors">About Us</a></li>
+          <li><a href="/contact" class="text-gray-400 hover:text-white text-sm transition-colors">Contact</a></li>
+          <li><a href="/blog" class="text-gray-400 hover:text-white text-sm transition-colors">Travel Blog</a></li>
+          <li><a href="/privacy" class="text-gray-400 hover:text-white text-sm transition-colors">Privacy Policy</a></li>
+          <li><a href="/terms" class="text-gray-400 hover:text-white text-sm transition-colors">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="text-gray-500 text-sm">© 2024 BengalHomestay.com — Made with <i class="fas fa-heart text-red-400"></i> in West Bengal, India</p>
+      <div class="flex items-center gap-2 text-gray-500 text-xs">
+        <i class="fas fa-shield-alt text-forest-500"></i>
+        <span>SSL Secured</span>
+        <span class="mx-2">•</span>
+        <i class="fas fa-lock text-forest-500"></i>
+        <span>Verified Listings</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Navbar scroll behaviour
+  const navbar = document.getElementById('navbar');
+  const logoText = document.getElementById('logo-text');
+  const logoTag  = document.getElementById('logo-tag');
+  const navLinks = document.querySelectorAll('.nav-link');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 60) {
+      navbar.classList.add('nav-scroll','shadow-md');
+      navbar.classList.remove('py-4');
+      navbar.classList.add('py-2');
+      logoText.classList.remove('text-white');
+      logoText.classList.add('text-forest-800');
+      logoTag.classList.remove('text-gold-300');
+      logoTag.classList.add('text-forest-600');
+      navLinks.forEach(l => { l.classList.remove('text-white/90','text-white'); l.classList.add('text-gray-700'); });
+    } else {
+      navbar.classList.remove('nav-scroll','shadow-md');
+      navbar.classList.remove('py-2');
+      navbar.classList.add('py-4');
+      logoText.classList.add('text-white');
+      logoText.classList.remove('text-forest-800');
+      logoTag.classList.add('text-gold-300');
+      logoTag.classList.remove('text-forest-600');
+      navLinks.forEach(l => { l.classList.add('text-white/90'); l.classList.remove('text-gray-700'); });
+    }
+  });
+
+  // Mobile menu toggle
+  document.getElementById('mob-menu-btn').addEventListener('click', () => {
+    document.getElementById('mob-menu').classList.toggle('hidden');
+  });
+
+  // Search function
+  function doSearch() {
+    const district = document.getElementById('search-district').value;
+    const category = document.getElementById('search-category').value;
+    const duration = document.getElementById('search-duration').value;
+    const params   = new URLSearchParams();
+    if (district) params.set('district', district);
+    if (category) params.set('group', category.toLowerCase());
+    if (duration) { const [min,max] = duration.split('-'); params.set('minStay',min); params.set('maxStay',max); }
+    window.location.href = '/homestays?' + params.toString();
+  }
+
+  function quickSearch(term) {
+    window.location.href = '/homestays?q=' + encodeURIComponent(term);
+  }
+
+  // Enter key on search
+  document.querySelectorAll('#search-district,#search-category,#search-duration')
+    .forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); }));
+</script>
+</body>
+</html>

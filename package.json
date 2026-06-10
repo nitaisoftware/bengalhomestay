@@ -1,0 +1,33 @@
+{
+  "name": "bengalhomestay",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev":   "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint":  "next lint",
+    "seed":  "ts-node prisma/seed/categories.ts"
+  },
+  "dependencies": {
+    "next":              "14.2.x",
+    "react":             "^18.3.0",
+    "react-dom":         "^18.3.0",
+    "@prisma/client":    "^5.x",
+    "date-fns":          "^3.x",
+    "slugify":           "^1.x",
+    "jsonwebtoken":      "^9.x",
+    "ioredis":           "^5.x",
+    "axios":             "^1.x",
+    "@tanstack/react-query": "^5.x",
+    "lucide-react":      "^0.383.0"
+  },
+  "devDependencies": {
+    "typescript":        "^5.x",
+    "@types/node":       "^20.x",
+    "@types/react":      "^18.x",
+    "prisma":            "^5.x",
+    "tailwindcss":       "^3.x",
+    "ts-node":           "^10.x"
+  }
+}
