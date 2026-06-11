@@ -64,9 +64,10 @@ async function getHomestay(slug: string): Promise<Homestay | null> {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const h = await getHomestay(params.slug);
+  const { slug } = await params;
+  const h = await getHomestay(slug);
   if (!h) return { title: 'Homestay not found' };
   return {
     title:       `${h.name} — ${h.district} | BengalHomestay`,
@@ -115,9 +116,10 @@ const AMENITY_ICONS: Record<string, string> = {
 export default async function HomestayDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const h = await getHomestay(params.slug);
+  const { slug } = await params;
+  const h = await getHomestay(slug);
   if (!h) notFound();
 
   const lowestRoomPrice = h.rooms.length > 0

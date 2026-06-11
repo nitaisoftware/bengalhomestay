@@ -3,12 +3,13 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const homestay = await prisma.homestay.findFirst({
       where: {
-        slug:   params.slug,
+        slug,
         status: 'approved',
       },
       include: {
