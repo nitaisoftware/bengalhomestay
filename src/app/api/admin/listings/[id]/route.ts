@@ -17,16 +17,16 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { action, reason } = await req.json();
+    const { action } = await req.json();
 
     if (!['approve', 'reject', 'suspend'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
     const statusMap: Record<string, string> = {
-      approve:  'approved',
-      reject:   'rejected',
-      suspend:  'suspended',
+      approve: 'approved',
+      reject:  'rejected',
+      suspend: 'suspended',
     };
 
     const homestay = await prisma.homestay.update({

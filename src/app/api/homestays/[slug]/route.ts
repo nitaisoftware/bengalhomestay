@@ -7,6 +7,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+
     const homestay = await prisma.homestay.findFirst({
       where: {
         slug,
@@ -38,13 +39,11 @@ export async function GET(
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    // Compute average rating
     const avgRating =
       homestay.reviews.length > 0
         ? Math.round(
             (homestay.reviews.reduce((sum, r) => sum + r.rating, 0) /
-              homestay.reviews.length) *
-              10
+              homestay.reviews.length) * 10
           ) / 10
         : null;
 

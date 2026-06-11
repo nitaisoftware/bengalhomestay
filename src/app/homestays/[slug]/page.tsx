@@ -1,10 +1,8 @@
-import { notFound }    from 'next/navigation';
+import { notFound }     from 'next/navigation';
 import type { Metadata } from 'next';
-import Image             from 'next/image';
-import Link              from 'next/link';
-import ContactButton     from '@/components/homestay/ContactButton';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import Image              from 'next/image';
+import Link               from 'next/link';
+import ContactButton      from '@/components/homestay/ContactButton';
 
 interface Room {
   id:            string;
@@ -50,16 +48,12 @@ interface Homestay {
   _count:        { reviews: number; bookings: number };
 }
 
-// ─── Data fetching ────────────────────────────────────────────────────────────
-
 async function getHomestay(slug: string): Promise<Homestay | null> {
   const base = process.env.API_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   const res  = await fetch(`${base}/api/homestays/${slug}`, { cache: 'no-store' });
   if (!res.ok) return null;
   return res.json();
 }
-
-// ─── Metadata ─────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({
   params,
@@ -77,8 +71,6 @@ export async function generateMetadata({
     },
   };
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -111,8 +103,6 @@ const AMENITY_ICONS: Record<string, string> = {
   'TV':            '📺',
 };
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default async function HomestayDetailPage({
   params,
 }: {
@@ -128,8 +118,7 @@ export default async function HomestayDetailPage({
 
   const coverImage  = h.images.find((i) => i.isCover) ?? h.images[0] ?? null;
   const otherImages = h.images.filter((i) => i.id !== coverImage?.id).slice(0, 4);
-
-  const hostSince = new Date(h.owner.createdAt).getFullYear();
+  const hostSince   = new Date(h.owner.createdAt).getFullYear();
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
@@ -150,24 +139,20 @@ export default async function HomestayDetailPage({
         <div>
           <div className="flex items-center gap-2 flex-wrap mb-1">
             {h.isPremium && (
-              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">
-                Premium
-              </span>
+              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">Premium</span>
             )}
             {h.isFeatured && !h.isPremium && (
-              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
-                Featured
-              </span>
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">Featured</span>
             )}
             {h.categories.map((c) => (
               <span key={c.category.slug} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                {c.category.icon ? `${c.category.icon} ` : ''}{c.category.name}
+                {c.category.name}
               </span>
             ))}
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{h.name}</h1>
           <p className="text-gray-500 mt-1">
-            📍 {h.district}{h.address ? `, ${h.address}` : ''}{h.state !== 'West Bengal' ? `, ${h.state}` : ''}
+            📍 {h.district}{h.address ? `, ${h.address}` : ''}
             {h.pincode ? ` – ${h.pincode}` : ''}
           </p>
           {h.avgRating && (
@@ -189,7 +174,6 @@ export default async function HomestayDetailPage({
 
       {/* Image gallery */}
       <div className="grid grid-cols-4 grid-rows-2 gap-2 rounded-2xl overflow-hidden mb-8 h-80 sm:h-96">
-        {/* Cover — spans 2 cols and 2 rows */}
         <div className="col-span-4 sm:col-span-2 row-span-2 relative bg-gray-100">
           {coverImage ? (
             <Image src={coverImage.url} alt={coverImage.altText ?? h.name} fill className="object-cover" />
@@ -197,8 +181,6 @@ export default async function HomestayDetailPage({
             <div className="flex items-center justify-center h-full text-gray-400 text-6xl">🏡</div>
           )}
         </div>
-
-        {/* Side thumbnails — up to 4 */}
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className="hidden sm:block relative bg-gray-100">
             {otherImages[i] ? (
@@ -212,10 +194,9 @@ export default async function HomestayDetailPage({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        {/* ── Left column ── */}
+        {/* Left column */}
         <div className="lg:col-span-2 space-y-8">
 
-          {/* Description */}
           {h.description && (
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-3">About this homestay</h2>
@@ -223,7 +204,6 @@ export default async function HomestayDetailPage({
             </section>
           )}
 
-          {/* Amenities */}
           {h.amenities.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-3">Amenities</h2>
@@ -238,7 +218,6 @@ export default async function HomestayDetailPage({
             </section>
           )}
 
-          {/* Rooms */}
           {h.rooms.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-3">
@@ -273,10 +252,9 @@ export default async function HomestayDetailPage({
             </section>
           )}
 
-          {/* Map placeholder */}
-          {(h.lat && h.lng) ? (
-            <section>
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Location</h2>
+          <section>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Location</h2>
+            {h.lat && h.lng ? (
               <div className="rounded-xl overflow-hidden border border-gray-100">
                 <iframe
                   title="Map"
@@ -288,19 +266,15 @@ export default async function HomestayDetailPage({
                   src={`https://www.google.com/maps?q=${h.lat},${h.lng}&z=14&output=embed`}
                 />
               </div>
-            </section>
-          ) : (
-            <section>
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Location</h2>
+            ) : (
               <div className="bg-gray-50 rounded-xl p-6 text-center text-gray-400 text-sm">
                 <p className="text-2xl mb-2">📍</p>
                 <p>{h.district}, West Bengal</p>
                 {h.address && <p className="mt-1 text-gray-500">{h.address}</p>}
               </div>
-            </section>
-          )}
+            )}
+          </section>
 
-          {/* Reviews */}
           <section>
             <h2 className="text-lg font-semibold text-gray-900 mb-3">
               Reviews
@@ -337,7 +311,7 @@ export default async function HomestayDetailPage({
 
         </div>
 
-        {/* ── Right column — sticky booking card ── */}
+        {/* Right column — sticky booking card */}
         <div className="lg:col-span-1">
           <div className="sticky top-20 bg-white border border-gray-100 rounded-2xl shadow-sm p-6 space-y-4">
 
@@ -373,14 +347,8 @@ export default async function HomestayDetailPage({
               </div>
             </div>
 
-            {/* Contact button — client component (needs sessionStorage) */}
-            <ContactButton
-              homestayId={h.id}
-              ownerId={h.owner.id}
-              slug={h.slug}
-            />
+            <ContactButton homestayId={h.id} ownerId={h.owner.id} slug={h.slug} />
 
-            {/* Host info */}
             <div className="pt-2 border-t border-gray-100">
               <p className="text-xs text-gray-400 mb-2">Hosted by</p>
               <div className="flex items-center gap-2">
