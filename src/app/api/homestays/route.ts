@@ -8,13 +8,15 @@ export async function GET(req: NextRequest) {
 
     // ── Query params ────────────────────────────────────────────────────────
     const district    = searchParams.get('district') || '';
-    const category    = searchParams.get('category') || '';   // category slug
+    const category    = searchParams.get('category') || '';
     const minPrice    = Number(searchParams.get('minPrice'))  || 0;
     const maxPrice    = Number(searchParams.get('maxPrice'))  || 99999;
     const amenities   = searchParams.get('amenities')?.split(',').filter(Boolean) || [];
+    const amenity     = searchParams.get('amenity') || '';   // single amenity filter
     const minStay     = Number(searchParams.get('minStay'))   || 1;
     const maxStay     = Number(searchParams.get('maxStay'))   || 30;
     const featured    = searchParams.get('featured') === 'true';
+    const sort        = searchParams.get('sort') || 'featured';
     const page        = Math.max(1, Number(searchParams.get('page'))  || 1);
     const limit       = Math.min(50, Number(searchParams.get('limit')) || 12);
     const skip        = (page - 1) * limit;
@@ -40,8 +42,9 @@ export async function GET(req: NextRequest) {
       where.maxStayDays = { gte: maxStay };
     }
 
-    if (amenities.length > 0) {
-      where.amenities = { hasEvery: amenities };
+    const allAmenities = [...amenities, ...(amenity ? [amenity] : [])].filter(Boolean);
+    if (allAmenities.length > 0) {
+      where.amenities = { hasEvery: allAmenities };
     }
 
     if (featured) {
@@ -63,11 +66,10 @@ export async function GET(req: NextRequest) {
         where,
         skip,
         take: limit,
-        orderBy: [
-          { isPremium: 'desc' },
-          { isFeatured: 'desc' },
-          { createdAt: 'desc' },
-        ],
+        orderBy: sort === 'price_asc'  ? [{ pricePerNight: 'asc'  }]
+              : sort === 'price_desc' ? [{ pricePerNight: 'desc' }]
+              : sort === 'newest'     ? [{ createdAt: 'desc' }]
+              : /* featured / rating */ [{ isPremium: 'desc' }, { isFeatured: 'desc' }, { createdAt: 'desc' }],
         select: {
           id:            true,
           slug:          true,
@@ -111,22 +113,23 @@ export async function GET(req: NextRequest) {
       return {
         ...h,
         coverImage: h.images[0] ?? null,
-        categories: h.categories.map((c) => c.category),
+        images: h.images.map(i => ({ url: i.url, isCover: true })),
+        categories: h.categories,
         avgRating,
         reviewCount: ratings.length,
         reviews: undefined,
-        images:  undefined,
       };
     });
 
+    const pages = Math.ceil(total / limit);
     return NextResponse.json({
-      data:       results,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      homestays: results,
+      total,
+      page,
+      pages,
+      // legacy shape kept for backward compat
+      data: results,
+      pagination: { total, page, limit, totalPages: pages },
     });
   } catch (err) {
     console.error('[GET /api/homestays]', err);
