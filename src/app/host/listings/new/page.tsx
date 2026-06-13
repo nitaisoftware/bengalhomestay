@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ImageUploader, { type UploadedImage } from '@/components/homestay/ImageUploader';
@@ -14,34 +14,71 @@ const DISTRICTS = [
 ];
 
 const AMENITIES = [
-  'Wi-Fi','Parking','Geyser','AC','Kitchen','Meals Included',
-  'Pet Friendly','Garden','River View','Mountain View',
-  'Forest View','Bonfire','Swimming Pool','Terrace',
+  'Free parking','Parking','Indoor pool','Outdoor pool','Pool',
+  'Fitness center','Restaurant','Free breakfast','Spa','Beach access',
+  'Child-friendly','Bar','Pet-friendly','Room service','Free Wi-Fi',
+  'Air-conditioned','All-inclusive available','Wheelchair accessible','EV charger',
 ];
 
-const ROOM_AMENITIES = [
-  'AC','Non AC','Geyser','TV','Attached Bathroom','Common Toilet','Balcony',
-  'Mountain View','River View','City View','View Room','Non View Room',
-  'Wi-Fi','Mini Fridge',
+const ROOM_FACILITIES = [
+  'Free parking','Parking','Indoor pool','Outdoor pool','Pool',
+  'Fitness center','Restaurant','Free breakfast','Spa','Beach access',
+  'Child-friendly','Bar','Pet-friendly','Room service','Free Wi-Fi',
+  'Air-conditioned','All-inclusive available','Wheelchair accessible','EV charger',
 ];
 
 const BED_TYPES = ['Single','Double','Twin','Triple','Queen','King','Dormitory'];
 
-const CATEGORIES = [
-  { slug: 'wildlife-sanctuaries', label: 'Wildlife Sanctuaries', group: 'Wildlife'  },
-  { slug: 'bird-watching',        label: 'Bird Watching',        group: 'Wildlife'  },
-  { slug: 'national-parks',       label: 'National Parks',       group: 'Wildlife'  },
-  { slug: 'monuments',            label: 'Monuments',            group: 'Heritage'  },
-  { slug: 'palaces-forts',        label: 'Palaces & Forts',      group: 'Heritage'  },
-  { slug: 'hinduism',             label: 'Hinduism',             group: 'Spiritual' },
-  { slug: 'rafting',              label: 'Rafting',              group: 'Adventure' },
-  { slug: 'hiking-trekking',      label: 'Hiking & Trekking',    group: 'Adventure' },
-  { slug: 'eco-tourism',          label: 'Eco Tourism',          group: 'Rural'     },
-  { slug: 'agro-tourism',         label: 'Agro Tourism',         group: 'Rural'     },
-  { slug: 'hills-mountains',      label: 'Hills & Mountains',    group: 'Nature'    },
-  { slug: 'rivers-lakes',         label: 'Rivers & Lakes',       group: 'Nature'    },
-  { slug: 'beaches-cruises',      label: 'Beaches & Cruises',    group: 'Nature'    },
-  { slug: 'forests-gardens',      label: 'Forests & Gardens',    group: 'Nature'    },
+const CATEGORY_GROUPS = [
+  { group: 'Wildlife',  icon: '🦁', subs: [
+    { slug: 'wildlife-sanctuaries',         label: 'Wildlife Sanctuaries'         },
+    { slug: 'zoological-parks',             label: 'Zoological Parks'             },
+    { slug: 'bird-watching',                label: 'Bird Watching'                },
+    { slug: 'national-parks',               label: 'National Parks'               },
+  ]},
+  { group: 'Heritage',  icon: '🏛️', subs: [
+    { slug: 'heritage-monuments',           label: 'Heritage Monuments'           },
+    { slug: 'museums',                      label: 'Museums'                      },
+    { slug: 'historical-buildings',         label: 'Historical Buildings'         },
+    { slug: 'unesco-world-heritage-sites',  label: 'UNESCO World Heritage Sites'  },
+    { slug: 'archeological-sites',          label: 'Archeological Sites'          },
+    { slug: 'historical-sites',             label: 'Historical Sites'             },
+    { slug: 'palaces-forts',                label: 'Palaces & Forts'              },
+  ]},
+  { group: 'Spiritual', icon: '🙏', subs: [
+    { slug: 'hinduism',    label: 'Hinduism'    },
+    { slug: 'islam',       label: 'Islam'       },
+    { slug: 'buddhism',    label: 'Buddhism'    },
+    { slug: 'sikhism',     label: 'Sikhism'     },
+    { slug: 'jainism',     label: 'Jainism'     },
+    { slug: 'christianity',label: 'Christianity'},
+    { slug: 'jewish',      label: 'Jewish'      },
+  ]},
+  { group: 'Adventure', icon: '🏔️', subs: [
+    { slug: 'rafting',                        label: 'Rafting'                          },
+    { slug: 'paragliding',                    label: 'Paragliding'                      },
+    { slug: 'parasailing',                    label: 'Parasailing'                      },
+    { slug: 'skiing',                         label: 'Skiing'                           },
+    { slug: 'sky-diving',                     label: 'Sky Diving'                       },
+    { slug: 'bungee-jumping',                 label: 'Bungee Jumping'                   },
+    { slug: 'mountain-biking',                label: 'Mountain Biking'                  },
+    { slug: 'hiking-trekking',                label: 'Hiking & Trekking'                },
+    { slug: 'mountaineering-rock-climbing',   label: 'Mountaineering & Rock Climbing'   },
+  ]},
+  { group: 'Rural',     icon: '🌾', subs: [
+    { slug: 'agro-tourism',    label: 'Agro-Tourism'    },
+    { slug: 'crafts-tourism',  label: 'Crafts-Tourism'  },
+    { slug: 'tribal-tourism',  label: 'Tribal-Tourism'  },
+    { slug: 'eco-tourism',     label: 'Eco-Tourism'     },
+    { slug: 'wildlife-tourism',label: 'Wildlife-Tourism'},
+  ]},
+  { group: 'Nature',    icon: '🌿', subs: [
+    { slug: 'sustainable-tourism', label: 'Sustainable Tourism' },
+    { slug: 'beaches-cruises',     label: 'Beaches & Cruises'   },
+    { slug: 'hills-mountains',     label: 'Hills & Mountains'   },
+    { slug: 'forests-gardens',     label: 'Forests & Gardens'   },
+    { slug: 'rivers-lakes',        label: 'Rivers & Lakes'      },
+  ]},
 ];
 
 interface Room {
@@ -56,6 +93,25 @@ const EMPTY_ROOM: Room = { name: '', capacity: '2', bedType: 'Double', pricePerN
 
 export default function NewListingPage() {
   const router = useRouter();
+
+  // ── Onboarding gate ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const token    = sessionStorage.getItem('access_token');
+    const userJson = sessionStorage.getItem('user');
+
+    if (!token) { router.replace('/host/login'); return; }
+
+    const user = userJson ? JSON.parse(userJson) : null;
+
+    // Already a host or admin — let them through unconditionally
+    if (user?.role === 'host' || user?.role === 'admin') return;
+
+    // Guest who hasn't completed host onboarding
+    if (!user?.onboardingComplete) {
+      router.replace('/host/register?incomplete=1');
+      return;
+    }
+  }, [router]);
 
   const [form, setForm] = useState({
     name: '', description: '', district: '', address: '',
@@ -284,9 +340,9 @@ export default function NewListingPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs text-gray-500 mb-2">Room amenities</label>
+                    <label className="block text-xs text-gray-500 mb-2">Room Facilities</label>
                     <div className="flex flex-wrap gap-1.5">
-                      {ROOM_AMENITIES.map((a) => {
+                      {ROOM_FACILITIES.map((a) => {
                         const active = room.amenities.includes(a);
                         return (
                           <button key={a} type="button" onClick={() => toggleRoomAmenity(i, a)}
@@ -331,22 +387,45 @@ export default function NewListingPage() {
 
           {/* Categories */}
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Categories</h2>
-            <p className="text-xs text-gray-400 mb-4">Select all that apply to your location</p>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => {
-                const active = categorySlugs.includes(c.slug);
-                return (
-                  <button key={c.slug} type="button"
-                    onClick={() => setCategorySlugs((prev) =>
-                      prev.includes(c.slug) ? prev.filter((x) => x !== c.slug) : [...prev, c.slug])}
-                    className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
-                      active ? 'bg-green-700 text-white border-green-700' : 'bg-white text-gray-600 border-gray-200 hover:border-green-600'
-                    }`}>
-                    {c.group} · {c.label}
-                  </button>
-                );
-              })}
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-base font-semibold text-gray-900">Categories</h2>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                categorySlugs.length >= 3 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {categorySlugs.length} / 3 selected
+              </span>
+            </div>
+            <p className="text-xs text-gray-400 mb-5">Select maximum 3 sub-categories from any group</p>
+            <div className="space-y-5">
+              {CATEGORY_GROUPS.map((g) => (
+                <div key={g.group}>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    {g.icon} {g.group}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {g.subs.map((s) => {
+                      const active   = categorySlugs.includes(s.slug);
+                      const maxed    = !active && categorySlugs.length >= 3;
+                      return (
+                        <button key={s.slug} type="button"
+                          disabled={maxed}
+                          onClick={() => setCategorySlugs((prev) =>
+                            prev.includes(s.slug)
+                              ? prev.filter((x) => x !== s.slug)
+                              : prev.length < 3 ? [...prev, s.slug] : prev
+                          )}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                            active  ? 'bg-green-700 text-white border-green-700'
+                            : maxed ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-green-600'
+                          }`}>
+                          {s.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
 

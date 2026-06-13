@@ -47,7 +47,13 @@ export async function GET(
           ) / 10
         : null;
 
-    return NextResponse.json({ ...homestay, avgRating });
+    // Contact info is only exposed for premium listings.
+    // For non-premium, these fields are stripped so they never reach the client.
+    const contactInfo = homestay.isPremium
+      ? { phone: homestay.phone, contactEmail: homestay.contactEmail }
+      : { phone: null,           contactEmail: null };
+
+    return NextResponse.json({ ...homestay, ...contactInfo, avgRating });
   } catch (err) {
     console.error('[GET /api/homestays/:slug]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

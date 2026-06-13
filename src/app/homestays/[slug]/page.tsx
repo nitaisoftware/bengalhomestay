@@ -2,7 +2,8 @@ import { notFound }     from 'next/navigation';
 import type { Metadata } from 'next';
 import Image              from 'next/image';
 import Link               from 'next/link';
-import ContactButton      from '@/components/homestay/ContactButton';
+import BookingForm        from '@/components/homestay/BookingForm';
+import { prisma }         from '@/lib/prisma';
 
 interface Room {
   id:            string;
@@ -38,6 +39,9 @@ interface Homestay {
   amenities:     string[];
   isFeatured:    boolean;
   isPremium:     boolean;
+  // Only populated by API when isPremium === true
+  phone:         string | null;
+  contactEmail:  string | null;
   avgRating:     number | null;
   createdAt:     string;
   owner:         { id: string; name: string | null; avatarUrl: string | null; createdAt: string };
@@ -49,10 +53,35 @@ interface Homestay {
 }
 
 async function getHomestay(slug: string): Promise<Homestay | null> {
-  const base = process.env.API_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-  const res  = await fetch(`${base}/api/homestays/${slug}`, { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const h = await prisma.homestay.findFirst({
+      where:   { slug, status: 'approved' },
+      include: {
+        owner:      { select: { id: true, name: true, avatarUrl: true, createdAt: true } },
+        images:     { orderBy: [{ isCover: 'desc' }, { sortOrder: 'asc' }] },
+        rooms:      { orderBy: { pricePerNight: 'asc' } },
+        categories: { include: { category: { select: { name: true, slug: true, group: true, icon: true } } } },
+        reviews:    { orderBy: { createdAt: 'desc' }, take: 10, include: { user: { select: { name: true, avatarUrl: true } } } },
+        _count:     { select: { reviews: true, bookings: true } },
+      },
+    });
+    if (!h) return null;
+
+    const ratings   = h.reviews.map(r => r.rating);
+    const avgRating = ratings.length
+      ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+      : null;
+
+    // Strip contact info for non-premium listings
+    return {
+      ...h,
+      phone:        h.isPremium ? h.phone        : null,
+      contactEmail: h.isPremium ? h.contactEmail : null,
+      avgRating,
+    } as unknown as Homestay;
+  } catch {
+    return null;
+  }
 }
 
 export async function generateMetadata({
@@ -90,17 +119,25 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 const AMENITY_ICONS: Record<string, string> = {
-  'Wi-Fi':         '📶',
-  'Parking':       '🅿️',
-  'Geyser':        '🚿',
-  'AC':            '❄️',
-  'Kitchen':       '🍳',
-  'Laundry':       '👕',
-  'Pet-friendly':  '🐾',
-  'Garden':        '🌿',
-  'River View':    '🌊',
-  'Mountain View': '⛰️',
-  'TV':            '📺',
+  'Free parking':           '🅿️',
+  'Parking':                '🅿️',
+  'Indoor pool':            '🏊',
+  'Outdoor pool':           '🏊‍♂️',
+  'Pool':                   '🏊',
+  'Fitness center':         '🏋️',
+  'Restaurant':             '🍽️',
+  'Free breakfast':         '🍳',
+  'Spa':                    '💆',
+  'Beach access':           '🏖️',
+  'Child-friendly':         '👨‍👩‍👧',
+  'Bar':                    '🍻',
+  'Pet-friendly':           '🐾',
+  'Room service':           '🛎️',
+  'Free Wi-Fi':             '📶',
+  'Air-conditioned':        '❄️',
+  'All-inclusive available':'✨',
+  'Wheelchair accessible':  '♿',
+  'EV charger':             '⚡',
 };
 
 export default async function HomestayDetailPage({
@@ -152,7 +189,7 @@ export default async function HomestayDetailPage({
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{h.name}</h1>
           <p className="text-gray-500 mt-1">
-            📍 {h.district}{h.address ? `, ${h.address}` : ''}
+            {h.district}{h.address ? <> 📍 {h.address}</> : ''}
             {h.pincode ? ` – ${h.pincode}` : ''}
           </p>
           {h.avgRating && (
@@ -347,17 +384,25 @@ export default async function HomestayDetailPage({
               </div>
             </div>
 
-            <ContactButton homestayId={h.id} ownerId={h.owner.id} slug={h.slug} />
+            <BookingForm
+              homestayId={h.id}
+              slug={h.slug}
+              pricePerNight={h.pricePerNight}
+              minStayDays={h.minStayDays}
+              maxStayDays={h.maxStayDays}
+              isPremium={h.isPremium}
+              phone={h.phone ?? null}
+              contactEmail={h.contactEmail ?? null}
+            />
 
             <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs text-gray-400 mb-2">Hosted by</p>
+              <p className="text-xs text-gray-400 mb-2">Managed by</p>
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-sm font-semibold">
                   {(h.owner.name ?? 'H')[0].toUpperCase()}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-800">{h.owner.name ?? 'Host'}</p>
-                  <p className="text-xs text-gray-400">Host since {hostSince}</p>
                 </div>
               </div>
             </div>

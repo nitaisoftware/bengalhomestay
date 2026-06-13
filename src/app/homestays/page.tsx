@@ -21,7 +21,12 @@ const CATEGORIES = [
   { label: 'Nature',    slug: 'hills-mountains'      },
 ];
 
-const AMENITIES = ['Wi-Fi','AC','Geyser','Parking','Breakfast','Kitchen','Pet-friendly','Garden','River View','Mountain View'];
+const AMENITIES = [
+  'Free parking','Parking','Indoor pool','Outdoor pool','Pool',
+  'Fitness center','Restaurant','Free breakfast','Spa','Beach access',
+  'Child-friendly','Bar','Pet-friendly','Room service','Free Wi-Fi',
+  'Air-conditioned','All-inclusive available','Wheelchair accessible','EV charger',
+];
 
 interface Homestay {
   id: string;

@@ -38,10 +38,11 @@ const CATEGORIES = [
   { label: 'Nature',    slug: 'hills-mountains',      icon: '🏔️', sub: 'Hills, Beaches & Lakes',color: 'bg-sky-50',   text: 'text-sky-600',    count: '5 types'      },
 ];
 
+// Sample cards link to the /homestays search page (no fake slugs)
 const FEATURED = [
-  { name: 'Himalayan Mist Cottage',  district: 'Darjeeling',        price: 1800, rating: 4.9, tags: ['Wi-Fi','Breakfast','Mountain View'], category: 'Nature',   slug: 'himalayan-mist-cottage',  premium: true,  img: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=75' },
-  { name: 'Sundarbans Forest Lodge', district: 'South 24 Parganas', price: 2500, rating: 4.7, tags: ['Boat Safari','All Meals','River View'], category: 'Wildlife', slug: 'sundarbans-forest-lodge', premium: false, img: 'https://images.unsplash.com/photo-1586375300773-8384e3e4916f?w=600&q=75' },
-  { name: "Nawab's Heritage Haveli", district: 'Murshidabad',       price: 3200, rating: 4.8, tags: ['Heritage Tour','AC Rooms','Parking'],  category: 'Heritage', slug: 'nawabs-heritage-haveli',  premium: true,  img: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=600&q=75' },
+  { name: 'Himalayan Mist Cottage',  district: 'Darjeeling',        price: 1800, rating: 4.9, tags: ['Free Wi-Fi','Free breakfast','Mountain View'], category: 'Nature',   slug: null,  premium: true,  img: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=75' },
+  { name: 'Sundarbans Forest Lodge', district: 'South 24 Parganas', price: 2500, rating: 4.7, tags: ['Boat Safari','Restaurant','Beach access'],     category: 'Wildlife', slug: null,  premium: false, img: 'https://images.unsplash.com/photo-1586375300773-8384e3e4916f?w=600&q=75' },
+  { name: "Nawab's Heritage Haveli", district: 'Murshidabad',       price: 3200, rating: 4.8, tags: ['Air-conditioned','Parking','Spa'],              category: 'Heritage', slug: null,  premium: true,  img: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=600&q=75' },
 ];
 
 const POPULAR_TAGS = ['Darjeeling','Sundarbans','Kalimpong','Digha','Murshidabad','Purulia'];
@@ -171,8 +172,8 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURED.map((h) => (
-              <div key={h.slug} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 hover:-translate-y-1 hover:shadow-lg transition-all">
+            {FEATURED.map((h, i) => (
+              <div key={h.name} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 hover:-translate-y-1 hover:shadow-lg transition-all">
                 <div className="relative h-56 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={h.img} alt={h.name} className="w-full h-full object-cover" loading="lazy" />
@@ -196,7 +197,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div><span className="text-green-700 font-bold text-lg">₹{h.price.toLocaleString('en-IN')}</span><span className="text-gray-400 text-xs"> / night</span></div>
-                    <Link href={`/homestays/${h.slug}`} className="bg-green-700 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all">
+                    <Link href={`/homestays?district=${encodeURIComponent(h.district)}`} className="bg-green-700 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all">
                       View
                     </Link>
                   </div>

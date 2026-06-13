@@ -29,8 +29,10 @@ const CATEGORIES = [
 ];
 
 const AMENITIES = [
-  'Wi-Fi','Parking','Geyser','AC','Kitchen','Meals Included',
-  'Pet Friendly','Garden','River View','Mountain View',
+  'Free parking','Parking','Indoor pool','Outdoor pool','Pool',
+  'Fitness center','Restaurant','Free breakfast','Spa','Beach access',
+  'Child-friendly','Bar','Pet-friendly','Room service','Free Wi-Fi',
+  'Air-conditioned','All-inclusive available','Wheelchair accessible','EV charger',
 ];
 
 export default function SearchFilters() {

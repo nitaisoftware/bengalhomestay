@@ -4,18 +4,26 @@ import { useEffect, useState } from 'react';
 import { useRouter }           from 'next/navigation';
 
 interface Props {
-  homestayId: string;
-  ownerId:    string;
-  slug:       string;
+  homestayId:   string;
+  ownerId:      string;
+  slug:         string;
+  isPremium:    boolean;
+  phone:        string | null;
+  contactEmail: string | null;
 }
 
-export default function ContactButton({ homestayId, ownerId, slug }: Props) {
-  const router    = useRouter();
+export default function ContactButton({
+  homestayId,
+  ownerId,
+  slug,
+  isPremium,
+  phone,
+  contactEmail,
+}: Props) {
+  const router   = useRouter();
   const [loggedIn, setLoggedIn] = useState(false);
   const [sent,     setSent]     = useState(false);
   const [loading,  setLoading]  = useState(false);
-  const [phone,    setPhone]    = useState<string | null>(null);
-  const [showPhone, setShowPhone] = useState(false);
 
   useEffect(() => {
     try {
@@ -24,20 +32,34 @@ export default function ContactButton({ homestayId, ownerId, slug }: Props) {
     } catch { /* SSR guard */ }
   }, []);
 
-  async function handleContact() {
-    if (!loggedIn) {
-      router.push(`/login?redirect=/homestays/${slug}`);
-      return;
-    }
-
-    // For now: reveal a "contact sent" confirmation
-    // Later: POST /api/inquiries to notify owner via SMS/email
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 600)); // simulate network
-    setSent(true);
-    setLoading(false);
+  // ── Premium: show contact details directly ─────────────────────────────────
+  if (isPremium && (phone || contactEmail)) {
+    return (
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Contact Host</p>
+        {phone && (
+          <a
+            href={`tel:${phone.replace(/\s/g, '')}`}
+            className="flex items-center gap-3 w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+          >
+            <span className="text-base">📞</span>
+            <span>{phone}</span>
+          </a>
+        )}
+        {contactEmail && (
+          <a
+            href={`mailto:${contactEmail}`}
+            className="flex items-center gap-3 w-full border border-green-700 hover:bg-green-50 text-green-700 font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+          >
+            <span className="text-base">✉️</span>
+            <span className="truncate">{contactEmail}</span>
+          </a>
+        )}
+      </div>
+    );
   }
 
+  // ── Fallback: non-premium or premium with no contact stored ───────────────
   if (sent) {
     return (
       <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
@@ -50,6 +72,17 @@ export default function ContactButton({ homestayId, ownerId, slug }: Props) {
     );
   }
 
+  async function handleContact() {
+    if (!loggedIn) {
+      router.push(`/login?redirect=/homestays/${slug}`);
+      return;
+    }
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 600));
+    setSent(true);
+    setLoading(false);
+  }
+
   return (
     <div className="space-y-2">
       <button
@@ -59,7 +92,6 @@ export default function ContactButton({ homestayId, ownerId, slug }: Props) {
       >
         {loading ? 'Sending...' : loggedIn ? 'Contact Host' : 'Sign in to Contact Host'}
       </button>
-
       {!loggedIn && (
         <p className="text-xs text-center text-gray-400">
           Free to contact · No booking fees

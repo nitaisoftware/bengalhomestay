@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit: max 3 OTPs per mobile per hour
-    const rateKey  = `otp_rate:${mobile}`;
+    const rateKey  = `rl:${mobile}`;
     const attempts = await redis.incr(rateKey);
     if (attempts === 1) await redis.expire(rateKey, 3600);
     if (attempts > 3) {

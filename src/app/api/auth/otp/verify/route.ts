@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const refreshToken = signRefreshToken(user.id);
 
     // Store refresh token in Redis (7 days)
-    await redis.setex(`refresh:${user.id}`, 60 * 60 * 24 * 7, refreshToken);
+    await redis.setex(`otp:refresh:${user.id}`, 60 * 60 * 24 * 7, refreshToken);
 
     const response = NextResponse.json({
       success: true,

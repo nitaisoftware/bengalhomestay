@@ -1,192 +1,211 @@
 /**
- * WB Tourism Homestay Scraper
- * Source: https://www.wbtourism.gov.in/home/dist_list_homestay
+ * WB Tourism Homestay Scraper — Auto-pagination version
  *
- * Usage:
+ * HOW TO USE:
  *   node scripts/scrape-wbtourism.js
+ *   node scripts/seed-scraped.js
  *
- * Output:
- *   scripts/scraped-homestays.json
+ * The scraper fetches every page for each district automatically,
+ * stopping when a page returns 0 homestay cards.
  *
- * Install deps first:
- *   npm install axios cheerio --save-dev
+ * Install once:  npm install axios cheerio --save-dev
  */
 
-const axios   = require('axios');
-const cheerio = require('cheerio');
-const fs      = require('fs');
-const path    = require('path');
+const axios     = require('axios');
+const cheerio   = require('cheerio');
+const fs        = require('fs');
+const path      = require('path');
+const https     = require('https');
+const constants = require('constants');
 
-const BASE_URL = 'https://www.wbtourism.gov.in';
-const DELAY_MS = 1200; // polite delay between requests
-
-// Known district page IDs from wbtourism.gov.in
-const DISTRICT_PAGES = [
-  { name: 'Darjeeling',        id: 309 },
-  { name: 'Kalimpong',         id: 310 },
-  { name: 'Jalpaiguri',        id: 311 },
-  { name: 'Alipurduar',        id: 312 },
-  { name: 'Cooch Behar',       id: 313 },
-  { name: 'Malda',             id: 314 },
-  { name: 'Murshidabad',       id: 319 },
-  { name: 'Birbhum',           id: 316 },
-  { name: 'Bankura',           id: 317 },
-  { name: 'Purulia',           id: 318 },
-  { name: 'Jhargram',          id: 320 },
-  { name: 'West Midnapore',    id: 321 },
-  { name: 'East Midnapore',    id: 322 },
-  { name: 'South 24 Parganas', id: 323 },
-  { name: 'North 24 Parganas', id: 303 },
-  { name: 'Nadia',             id: 324 },
-  { name: 'Hooghly',           id: 325 },
-  { name: 'Howrah',            id: 326 },
-  { name: 'Kolkata',           id: 327 },
-  { name: 'Bardhaman',         id: 328 },
-  { name: 'Sundarbans',        id: 702 },
+// ═════════════════════════════════════════════════════════════════════════════
+//  One base URL per district — scraper auto-fetches ALL pages until empty
+// ═════════════════════════════════════════════════════════════════════════════
+const DISTRICTS = [
+  { district: 'Alipurduar',        url: 'https://www.wbtourism.gov.in/home-stay-page/664' },
+  { district: 'Bankura',           url: 'https://www.wbtourism.gov.in/home-stay-page/305' },
+  { district: 'Birbhum',           url: 'https://www.wbtourism.gov.in/home-stay-page/307' },
+  { district: 'Cooch Behar',       url: 'https://www.wbtourism.gov.in/home-stay-page/308' },
+  { district: 'Dakshin Dinajpur',  url: 'https://www.wbtourism.gov.in/home-stay-page/310' },
+  { district: 'Darjeeling',        url: 'https://www.wbtourism.gov.in/home-stay-page/309' },
+  { district: 'Hooghly',           url: 'https://www.wbtourism.gov.in/home-stay-page/312' },
+  { district: 'Howrah',            url: 'https://www.wbtourism.gov.in/home-stay-page/313' },
+  { district: 'Jalpaiguri',        url: 'https://www.wbtourism.gov.in/home-stay-page/314' },
+  { district: 'Jhargram',          url: 'https://www.wbtourism.gov.in/home-stay-page/703' },
+  { district: 'Kalimpong',         url: 'https://www.wbtourism.gov.in/home-stay-page/702' },
+  { district: 'Kolkata',           url: 'https://www.wbtourism.gov.in/home-stay-page/315' },
+  { district: 'Malda',             url: 'https://www.wbtourism.gov.in/home-stay-page/316' },
+  { district: 'Murshidabad',       url: 'https://www.wbtourism.gov.in/home-stay-page/319' },
+  { district: 'Nadia',             url: 'https://www.wbtourism.gov.in/home-stay-page/320' },
+  { district: 'North 24 Parganas', url: 'https://www.wbtourism.gov.in/home-stay-page/303' },
+  { district: 'Paschim Bardhaman', url: 'https://www.wbtourism.gov.in/home-stay-page/704' },
+  { district: 'Paschim Medinipur', url: 'https://www.wbtourism.gov.in/home-stay-page/318' },
+  { district: 'Purba Bardhaman',   url: 'https://www.wbtourism.gov.in/home-stay-page/306' },
+  { district: 'Purba Medinipur',   url: 'https://www.wbtourism.gov.in/home-stay-page/317' },
+  { district: 'Purulia',           url: 'https://www.wbtourism.gov.in/home-stay-page/321' },
+  { district: 'South 24 Parganas', url: 'https://www.wbtourism.gov.in/home-stay-page/304' },
+  { district: 'Uttar Dinajpur',    url: 'https://www.wbtourism.gov.in/home-stay-page/311' },
 ];
+// ═════════════════════════════════════════════════════════════════════════════
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+const DELAY_MS = 1000;
 
-async function fetchPage(url) {
+const httpsAgent = new https.Agent({
+  secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+  rejectUnauthorized: false,
+});
+
+const http = axios.create({
+  timeout:    20000,
+  httpsAgent,
+  headers: {
+    'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0',
+    'Accept':          'text/html,application/xhtml+xml',
+    'Accept-Language': 'en-IN,en;q=0.9',
+    'Referer':         'https://www.wbtourism.gov.in/',
+  },
+});
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function fetchHtml(url) {
   try {
-    const res = await axios.get(url, {
-      timeout: 15000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; BengalHomestayBot/1.0)',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-    });
+    const res = await http.get(url);
     return res.data;
   } catch (err) {
-    console.warn(`  ⚠ Failed to fetch ${url}: ${err.message}`);
+    console.warn(`  ⚠ ${url}\n    ${err.message}`);
     return null;
   }
 }
 
-function parseHomestayPage(html, district) {
-  const $        = cheerio.load(html);
-  const results  = [];
+function extractPhone(text) {
+  const m = text.match(/(\+?91[-.\s]?)?([6-9]\d{9}|0\d{2,4}[-\s]\d{6,8})/);
+  return m ? m[0].replace(/\s+/g, ' ').trim() : '';
+}
 
-  // WB Tourism tables: each row is a homestay
-  // Typical columns: S.No | Name | Address | Phone | Email | Rooms | Price
-  $('table tbody tr').each((_, row) => {
-    const cells = $(row).find('td').map((_, td) => $(td).text().trim()).get();
-    if (cells.length < 3) return;
+function extractEmail(cells) {
+  return cells.find(c => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c.trim())) || '';
+}
 
-    // Skip header rows
-    if (cells[0].toLowerCase().includes('s.no') || cells[0].toLowerCase().includes('sl')) return;
-
-    const name    = cells[1] || cells[0] || '';
-    const address = cells[2] || '';
-    const phone   = cells.find(c => /^\+?[\d\s\-()]{8,}$/.test(c.replace(/\D/g, '').slice(0,10))) || '';
-    const email   = cells.find(c => c.includes('@')) || '';
-
-    // Extract price if present (look for ₹ or numbers like 500-2000)
-    const priceCell = cells.find(c => /₹|rs\.?|inr|\d{3,4}/i.test(c));
-    let pricePerNight = 0;
-    if (priceCell) {
-      const match = priceCell.match(/(\d{3,6})/);
-      if (match) pricePerNight = parseInt(match[1], 10);
+function extractPrice(cells) {
+  for (const c of cells) {
+    if (/₹|rs\.?|inr|tariff|charge|per.?night/i.test(c)) {
+      const m = c.match(/(\d{3,6})/);
+      if (m) return parseInt(m[1], 10);
     }
+  }
+  return 0;
+}
+
+function getSpanText($, $el, label) {
+  let val = '';
+  $el.find('p').each((_, p) => {
+    const text = $(p).text();
+    if (text.toLowerCase().includes(label.toLowerCase())) {
+      val = $(p).find('span').text().replace(/\s+/g, ' ').trim();
+    }
+  });
+  return val;
+}
+
+function parseRows(html, district) {
+  const $       = cheerio.load(html);
+  const results = [];
+
+  // WB Tourism uses .home-sty-main cards, one per homestay
+  $('.home-sty-main').each((_, card) => {
+    const $card = $(card);
+
+    const name  = $card.find('.home-top-h h5').text().replace(/\s+/g, ' ').trim();
+    const owner = $card.find('.home-bottom-link h6').text().replace(/\s+/g, ' ').trim();
 
     if (!name || name.length < 3) return;
 
+    const phone         = getSpanText($, $card, 'Phone');
+    const email         = getSpanText($, $card, 'Email');
+    const address       = getSpanText($, $card, 'Address');
+    const subdivision   = getSpanText($, $card, 'Sub Division');
+    const block         = getSpanText($, $card, 'Block');
+    const village       = getSpanText($, $card, 'Village');
+    const policeStation = getSpanText($, $card, 'Police Station');
+    const landmark      = getSpanText($, $card, 'Land Mark');
+
+    const fullAddress = [address, village, block, subdivision, policeStation, landmark]
+      .filter(Boolean).join(', ');
+
     results.push({
-      name:          name.replace(/\s+/g, ' ').trim(),
+      name,
+      owner,
       district,
-      address:       address.replace(/\s+/g, ' ').trim(),
-      phone:         phone.replace(/\s+/g, ' ').trim(),
-      email:         email.toLowerCase().trim(),
-      pricePerNight: pricePerNight || 1000, // default if not found
+      address:       fullAddress || address,
+      subdivision,
+      block,
+      village,
+      phone,
+      email,
+      pricePerNight: 1000, // WB Tourism doesn't show price — set default
       source:        'wbtourism.gov.in',
-      status:        'pending',             // needs admin approval
+      status:        'pending',
     });
   });
 
-  // Fallback: some pages use divs/cards instead of tables
-  if (results.length === 0) {
-    $('.homestay-item, .card, .listing-item').each((_, el) => {
-      const name    = $(el).find('h2,h3,h4,.name,.title').first().text().trim();
-      const address = $(el).find('.address,.location,address').first().text().trim();
-      const phone   = $(el).find('.phone,.contact,[href^="tel:"]').first().text().trim();
-      if (name && name.length > 3) {
-        results.push({
-          name, district, address, phone,
-          email: '', pricePerNight: 1000,
-          source: 'wbtourism.gov.in', status: 'pending',
-        });
-      }
-    });
-  }
-
-  return results;
-}
-
-async function scrapeDistrict(district, id) {
-  const url  = `${BASE_URL}/home-stay-page/${id}`;
-  console.log(`  Fetching ${district} → ${url}`);
-  const html = await fetchPage(url);
-  if (!html) return [];
-
-  const results = parseHomestayPage(html, district);
-  console.log(`  ✓ ${district}: ${results.length} homestays found`);
   return results;
 }
 
 async function main() {
-  console.log('🏡 WB Tourism Homestay Scraper\n');
+  console.log(`🏡 WB Tourism Scraper — ${DISTRICTS.length} districts, auto-paginating\n`);
 
-  // First, try the main listing page to discover any IDs we missed
-  console.log('Fetching district list...');
-  const mainHtml = await fetchPage(`${BASE_URL}/home/dist_list_homestay`);
-  if (mainHtml) {
-    const $     = cheerio.load(mainHtml);
-    const found = [];
-    $('a[href*="home-stay-page"]').each((_, el) => {
-      const href  = $(el).attr('href') || '';
-      const match = href.match(/home-stay-page\/(\d+)/);
-      const name  = $(el).text().trim();
-      if (match && name) {
-        found.push({ name, id: parseInt(match[1], 10) });
+  const all = [];
+
+  for (const { district, url } of DISTRICTS) {
+    console.log(`\n📍 ${district}`);
+
+    let pageNum    = 1;
+    let distTotal  = 0;
+
+    while (true) {
+      const pageUrl = pageNum === 1 ? url : `${url}?page=${pageNum}`;
+      process.stdout.write(`  Page ${pageNum}: fetching... `);
+
+      const html = await fetchHtml(pageUrl);
+
+      if (!html) {
+        console.log('FAILED — stopping district');
+        break;
       }
-    });
-    if (found.length > 0) {
-      console.log(`Found ${found.length} districts on main page:`);
-      found.forEach(d => console.log(`  ${d.name} → ID ${d.id}`));
-      // Merge with our known list (prefer discovered)
-      found.forEach(f => {
-        const existing = DISTRICT_PAGES.find(d => d.id === f.id);
-        if (!existing) DISTRICT_PAGES.push(f);
-      });
+
+      const rows = parseRows(html, district);
+      console.log(`${rows.length} homestays`);
+
+      if (rows.length === 0) {
+        // Empty page = no more data for this district
+        break;
+      }
+
+      all.push(...rows);
+      distTotal += rows.length;
+      pageNum++;
+      await sleep(DELAY_MS);
     }
-  }
-  await sleep(DELAY_MS);
 
-  const allHomestays = [];
-
-  for (const { name, id } of DISTRICT_PAGES) {
-    const homestays = await scrapeDistrict(name, id);
-    allHomestays.push(...homestays);
-    await sleep(DELAY_MS);
+    console.log(`  ✓ ${distTotal} total for ${district} (${pageNum - 1} page(s))`);
   }
 
-  // Deduplicate by name+district
-  const seen    = new Set();
-  const unique  = allHomestays.filter(h => {
+  // Deduplicate by name + district
+  const seen   = new Set();
+  const unique = all.filter(h => {
     const key = `${h.name}||${h.district}`.toLowerCase();
     if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
+    seen.add(key); return true;
   });
 
   const outPath = path.join(__dirname, 'scraped-homestays.json');
   fs.writeFileSync(outPath, JSON.stringify(unique, null, 2));
 
-  console.log(`\n✅ Done! ${unique.length} unique homestays saved to:\n   ${outPath}`);
-  console.log('\nNext step: run the seed script to import into your database:');
-  console.log('   node scripts/seed-scraped.js');
+  console.log(`\n${'─'.repeat(50)}`);
+  console.log(`✅ ${unique.length} unique homestays saved → ${outPath}`);
+  console.log(`   (${all.length - unique.length} duplicates removed)`);
+  console.log(`\nNext: node scripts/seed-scraped.js`);
 }
 
 main().catch(console.error);

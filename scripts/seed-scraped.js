@@ -44,10 +44,9 @@ async function main() {
   if (!scraperUser) {
     scraperUser = await prisma.user.create({
       data: {
-        mobile:   '0000000000',
-        name:     'WB Tourism (Scraped)',
-        role:     'host',
-        isActive: false, // not a real user
+        mobile: '0000000000',
+        name:   'WB Tourism (Scraped)',
+        role:   'host',
       },
     });
     console.log('Created scraper system user');
@@ -81,12 +80,15 @@ async function main() {
         district:      h.district,
         state:         'West Bengal',
         address:       h.address || null,
-        description:   `Homestay in ${h.district}, West Bengal. Contact: ${h.phone || 'N/A'}`,
+        description:   `Homestay in ${h.district}, West Bengal.`,
         pricePerNight: h.pricePerNight || 1000,
         minStayDays:   1,
         maxStayDays:   30,
         amenities:     [],
-        status:        'pending',   // admin must approve
+        // Contact stored in DB but hidden from public until isPremium = true
+        phone:         h.phone || null,
+        contactEmail:  h.email || null,
+        status:        'pending_review',   // admin must approve
         isFeatured:    false,
         isPremium:     false,
         ownerId:       scraperUser.id,
