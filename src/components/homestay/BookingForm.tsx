@@ -37,6 +37,10 @@ export default function BookingForm({
   const [submitted,  setSubmitted]  = useState(false);
   const [confirmedStatus, setConfirmedStatus] = useState<string | null>(null);
 
+  // Live availability
+  const [avail,      setAvail]      = useState<{ available: boolean; minAvailable: number; totalRooms: number } | null>(null);
+  const [availLoad,  setAvailLoad]  = useState(false);
+
   useEffect(() => {
     try {
       const token = sessionStorage.getItem('access_token');
@@ -50,6 +54,17 @@ export default function BookingForm({
     ? Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000)
     : 0;
   const total    = nights > 0 ? nights * pricePerNight : 0;
+
+  // Fetch availability whenever dates change
+  useEffect(() => {
+    if (!checkIn || !checkOut || checkOut <= checkIn) { setAvail(null); return; }
+    setAvailLoad(true);
+    fetch(`/api/homestays/availability?homestayId=${homestayId}&checkIn=${checkIn}&checkOut=${checkOut}&rooms=1`)
+      .then(r => r.json())
+      .then(d => setAvail(d))
+      .catch(() => setAvail(null))
+      .finally(() => setAvailLoad(false));
+  }, [checkIn, checkOut, homestayId]);
 
   // Auto-set checkout when checkin changes
   function handleCheckIn(val: string) {
@@ -161,6 +176,26 @@ export default function BookingForm({
         <div className="bg-green-50 rounded-lg px-3 py-2 flex justify-between items-center text-sm">
           <span className="text-gray-600">{nights} night{nights > 1 ? 's' : ''} × ₹{pricePerNight.toLocaleString('en-IN')}</span>
           <span className="font-bold text-green-700">₹{total.toLocaleString('en-IN')}</span>
+        </div>
+      )}
+
+      {/* Live availability indicator */}
+      {checkIn && checkOut && checkOut > checkIn && (
+        <div className={`rounded-lg px-3 py-2 text-xs font-medium flex items-center gap-2
+          ${availLoad ? 'bg-gray-50 text-gray-400' :
+            !avail ? 'bg-gray-50 text-gray-400' :
+            avail.minAvailable === 0 ? 'bg-red-50 text-red-600' :
+            avail.minAvailable <= 2  ? 'bg-amber-50 text-amber-700' :
+                                       'bg-green-50 text-green-700'}`}>
+          {availLoad ? (
+            <><span className="animate-spin">⏳</span> Checking availability…</>
+          ) : !avail ? null :
+            avail.minAvailable === 0 ? (
+              <>🔴 No rooms available for selected dates</>
+            ) : (
+              <>🟢 {avail.minAvailable} of {avail.totalRooms} room{avail.totalRooms !== 1 ? 's' : ''} available</>
+            )
+          }
         </div>
       )}
 

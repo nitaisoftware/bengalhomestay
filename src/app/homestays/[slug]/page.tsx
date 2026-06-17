@@ -203,6 +203,9 @@ export default async function HomestayDetailPage({
         <div className="text-right shrink-0">
           <p className="text-2xl font-bold text-green-700">₹{lowestRoomPrice.toLocaleString('en-IN')}</p>
           <p className="text-xs text-gray-400">{h.rooms.length > 1 ? 'from / night' : '/ night'}</p>
+          {h.rooms.length > 0 && (
+            <p className="text-xs text-green-600 font-medium mt-1">🛏️ {h.rooms.length} room{h.rooms.length !== 1 ? 's' : ''} available</p>
+          )}
           {h.minStayDays > 1 && (
             <p className="text-xs text-gray-400 mt-0.5">min {h.minStayDays} nights</p>
           )}
