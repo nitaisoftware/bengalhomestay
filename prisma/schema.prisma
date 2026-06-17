@@ -214,6 +214,7 @@ model Booking {
   checkIn           DateTime
   checkOut          DateTime
   guests            Int
+  roomsRequested    Int           @default(1)
   totalAmount       Float
   status            BookingStatus @default(pending)
   message           String?

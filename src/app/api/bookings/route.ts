@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma }            from '@/lib/prisma';
-import { verifyAccessToken } from '@/lib/auth';
+import { prisma }                from '@/lib/prisma';
+import { verifyAccessToken }     from '@/lib/auth';
+import { notifyHostNewInquiry }  from '@/lib/email';
+import { checkAvailability }     from '@/lib/availability';
 
 // ── POST /api/bookings — guest creates an inquiry ─────────────────────────
 export async function POST(req: NextRequest) {
@@ -12,7 +14,8 @@ export async function POST(req: NextRequest) {
     const payload = verifyAccessToken(token);
     if (!payload?.userId) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
 
-    const { homestayId, checkIn, checkOut, guests, message } = await req.json();
+    const { homestayId, checkIn, checkOut, guests, roomsRequested: roomsReq, message } = await req.json();
+    const roomsRequested = Number(roomsReq ?? 1);
 
     if (!homestayId || !checkIn || !checkOut || !guests) {
       return NextResponse.json({ error: 'homestayId, checkIn, checkOut and guests are required' }, { status: 400 });
@@ -31,7 +34,10 @@ export async function POST(req: NextRequest) {
     // Verify homestay exists and is approved
     const homestay = await prisma.homestay.findFirst({
       where: { id: homestayId, status: 'approved' },
-      select: { id: true, pricePerNight: true, ownerId: true },
+      select: {
+        id: true, name: true, pricePerNight: true, ownerId: true,
+        owner: { select: { name: true, email: true } },
+      },
     });
     if (!homestay) return NextResponse.json({ error: 'Homestay not found' }, { status: 404 });
 
@@ -40,24 +46,55 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'You cannot book your own homestay' }, { status: 400 });
     }
 
+    // Check room availability
+    const avail = await checkAvailability(homestayId, checkInDate, checkOutDate, roomsRequested);
+    if (!avail.available) {
+      const msg = avail.fullyBookedDates.length > 0
+        ? `No rooms available on ${avail.fullyBookedDates.join(', ')}. This property is fully booked on those dates.`
+        : `Only ${avail.minAvailable} room(s) available — you requested ${roomsRequested}.`;
+      return NextResponse.json({ error: msg, fullyBookedDates: avail.fullyBookedDates }, { status: 409 });
+    }
+
     const nights      = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
     const totalAmount = nights * homestay.pricePerNight;
+
+    const guest = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { name: true, mobile: true },
+    });
 
     const booking = await prisma.booking.create({
       data: {
         homestayId,
-        guestId:     payload.userId,
-        checkIn:     checkInDate,
-        checkOut:    checkOutDate,
-        guests:      Number(guests),
+        guestId:        payload.userId,
+        checkIn:        checkInDate,
+        checkOut:       checkOutDate,
+        guests:         Number(guests),
+        roomsRequested,
         totalAmount,
-        message:     message?.trim() || null,
-        status:      'pending',
+        message:        message?.trim() || null,
+        status:         'pending',
       },
       include: {
         homestay: { select: { name: true, district: true } },
       },
     });
+
+    // Notify host by email (fire-and-forget)
+    if (homestay.owner?.email) {
+      notifyHostNewInquiry({
+        hostEmail:    homestay.owner.email,
+        hostName:     homestay.owner.name ?? 'Host',
+        guestName:    guest?.name ?? guest?.mobile ?? 'Guest',
+        guestMobile:  guest?.mobile ?? '',
+        homestayName: homestay.name,
+        checkIn:      checkInDate.toDateString(),
+        checkOut:     checkOutDate.toDateString(),
+        guests:       Number(guests),
+        message:      message?.trim() || null,
+        dashboardUrl: 'https://bengalihomestay.com/host/dashboard',
+      }).catch(console.error);
+    }
 
     return NextResponse.json({ success: true, booking }, { status: 201 });
   } catch (err) {
