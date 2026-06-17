@@ -45,7 +45,7 @@ function fmt(d: string) {
 export default function HostDashboardPage() {
   const router = useRouter();
 
-  const [activeTab,  setActiveTab]  = useState<'overview' | 'inquiries'>('overview');
+  const [activeTab,  setActiveTab]  = useState<'overview' | 'inquiries' | 'rooms' | 'availability'>('overview');
   const [data,       setData]       = useState<DashboardData | null>(null);
   const [inquiries,  setInquiries]  = useState<Inquiry[]>([]);
   const [inqLoading, setInqLoading] = useState(false);
@@ -134,19 +134,24 @@ export default function HostDashboardPage() {
         <StatsKPIRow stats={data.stats} />
 
         {/* Tab nav */}
-        <div className="flex gap-1 border-b border-gray-200">
-          {(['overview', 'inquiries'] as const).map(tab => (
+        <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">
+          {[
+            { key: 'overview',      label: 'Overview' },
+            { key: 'inquiries',     label: 'Inquiries' },
+            { key: 'rooms',         label: '🛏️ Rooms' },
+            { key: 'availability',  label: '📅 Availability' },
+          ].map(tab => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
-                activeTab === tab
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              className={`relative px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.key
                   ? 'text-green-700 border-b-2 border-green-700 -mb-px'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              {tab === 'overview' ? 'Overview' : 'Inquiries'}
-              {tab === 'inquiries' && pendingCount > 0 && (
+              {tab.label}
+              {tab.key === 'inquiries' && pendingCount > 0 && (
                 <span className="ml-1.5 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   {pendingCount}
                 </span>
@@ -194,10 +199,10 @@ export default function HostDashboardPage() {
             {/* Quick links */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: 'Manage Rooms',    href: '/host/rooms',               emoji: '🛏️' },
-                { label: 'View Inquiries',  href: '#',                     emoji: '📬', onClick: () => setActiveTab('inquiries') },
-                { label: 'Revenue Report',  href: '/host/dashboard/month', emoji: '💰' },
-                { label: 'Upgrade to Paid', href: '/host/pricing',         emoji: '⭐' },
+                { label: 'Manage Rooms',       href: '/host/rooms',           emoji: '🛏️' },
+                { label: 'Room Availability',  href: '/host/availability',    emoji: '📅' },
+                { label: 'View Inquiries',     href: '#',                     emoji: '📬', onClick: () => setActiveTab('inquiries') },
+                { label: 'Upgrade to Paid',    href: '/host/pricing',         emoji: '⭐' },
               ].map(q => (
                 q.onClick ? (
                   <button key={q.label} onClick={q.onClick}
@@ -326,6 +331,32 @@ export default function HostDashboardPage() {
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── ROOMS TAB ─────────────────────────────────────────────────── */}
+        {activeTab === 'rooms' && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center space-y-4">
+            <p className="text-4xl">🛏️</p>
+            <p className="text-lg font-semibold text-gray-800">Manage Rooms</p>
+            <p className="text-sm text-gray-500">Add, edit, or deactivate rooms for your property.</p>
+            <a href="/host/rooms"
+              className="inline-block bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors">
+              Open Room Manager →
+            </a>
+          </div>
+        )}
+
+        {/* ── AVAILABILITY TAB ──────────────────────────────────────────── */}
+        {activeTab === 'availability' && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center space-y-4">
+            <p className="text-4xl">📅</p>
+            <p className="text-lg font-semibold text-gray-800">Room Availability</p>
+            <p className="text-sm text-gray-500">Control which rooms are open on specific dates. Set vacation blocks.</p>
+            <a href="/host/availability"
+              className="inline-block bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors">
+              Open Availability Calendar →
+            </a>
           </div>
         )}
 
