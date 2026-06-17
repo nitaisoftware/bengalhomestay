@@ -131,11 +131,12 @@ model Homestay {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  rooms      Room[]
-  images     HomestayImage[]
-  categories HomestayCategory[]
-  reviews    Review[]
-  bookings   Booking[]
+  rooms             Room[]
+  images            HomestayImage[]
+  categories        HomestayCategory[]
+  reviews           Review[]
+  bookings          Booking[]
+  roomAvailability  RoomAvailability[]
 
   @@index([district])
   @@index([status])
@@ -156,6 +157,8 @@ model Room {
   pricePerNight Float
   amenities     String[]
   createdAt     DateTime @default(now())
+
+  availability RoomAvailability[]
 
   @@map("rooms")
 }
@@ -201,6 +204,27 @@ model Review {
   createdAt  DateTime @default(now())
 
   @@map("reviews")
+}
+
+// ─── Room Availability Overrides ─────────────────────────────────────────────
+// Only stores EXCEPTIONS. No record = room is enabled (default).
+// isEnabled=false = host manually blocked this room for this date.
+
+model RoomAvailability {
+  id         String   @id @default(uuid())
+  roomId     String
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  homestayId String
+  homestay   Homestay @relation(fields: [homestayId], references: [id], onDelete: Cascade)
+  date       DateTime @db.Date
+  isEnabled  Boolean  @default(false)  // false = blocked by host
+  reason     String?                   // optional note (e.g. "Maintenance", "Vacation")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([roomId, date])
+  @@index([homestayId, date])
+  @@map("room_availability")
 }
 
 // ─── Bookings ────────────────────────────────────────────────────────────────

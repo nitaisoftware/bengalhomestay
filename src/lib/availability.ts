@@ -45,11 +45,37 @@ export async function getBookedRoomsPerDay(
 }
 
 /**
+ * Returns how many rooms are manually disabled per day by the host.
+ * Only looks at room_availability records with isEnabled=false.
+ */
+async function getDisabledRoomsPerDay(
+  homestayId: string,
+  checkIn:    Date,
+  checkOut:   Date
+): Promise<Map<string, number>> {
+  const overrides = await prisma.roomAvailability.findMany({
+    where: {
+      homestayId,
+      isEnabled: false,
+      date: { gte: checkIn, lt: checkOut },
+    },
+    select: { date: true },
+  });
+
+  const disabledMap = new Map<string, number>();
+  for (const o of overrides) {
+    const key = o.date.toISOString().split('T')[0];
+    disabledMap.set(key, (disabledMap.get(key) ?? 0) + 1);
+  }
+  return disabledMap;
+}
+
+/**
  * Checks if a booking request can be fulfilled.
- * Returns:
- *   available: true/false
- *   minAvailable: minimum available rooms across all requested days
- *   fullyBookedDates: list of dates that are at capacity
+ * Accounts for:
+ *  - Total rooms in the property
+ *  - Rooms manually disabled by the host for specific dates
+ *  - Rooms already occupied by pending/confirmed bookings
  */
 export async function checkAvailability(
   homestayId:     string,
@@ -61,21 +87,33 @@ export async function checkAvailability(
   minAvailable:     number;
   totalRooms:       number;
   fullyBookedDates: string[];
+  hostBlockedDates: string[];
 }> {
-  const totalRooms  = await getTotalRooms(homestayId);
-  const bookedMap   = await getBookedRoomsPerDay(homestayId, checkIn, checkOut);
+  const [totalRooms, bookedMap, disabledMap] = await Promise.all([
+    getTotalRooms(homestayId),
+    getBookedRoomsPerDay(homestayId, checkIn, checkOut),
+    getDisabledRoomsPerDay(homestayId, checkIn, checkOut),
+  ]);
 
-  let minAvailable      = totalRooms;
-  const fullyBookedDates: string[] = [];
+  let minAvailable          = totalRooms;
+  const fullyBookedDates:  string[] = [];
+  const hostBlockedDates:  string[] = [];
 
   const cursor = new Date(checkIn);
   while (cursor < checkOut) {
-    const key    = cursor.toISOString().split('T')[0];
-    const booked = bookedMap.get(key) ?? 0;
-    const avail  = totalRooms - booked;
+    const key      = cursor.toISOString().split('T')[0];
+    const booked   = bookedMap.get(key)   ?? 0;
+    const disabled = disabledMap.get(key) ?? 0;
+    const avail    = totalRooms - booked - disabled;
 
     if (avail < minAvailable) minAvailable = avail;
-    if (avail <= 0) fullyBookedDates.push(key);
+    if (avail <= 0) {
+      if (disabled > 0 && booked === 0) {
+        hostBlockedDates.push(key);  // host blocked, not guest-booked
+      } else {
+        fullyBookedDates.push(key);
+      }
+    }
 
     cursor.setDate(cursor.getDate() + 1);
   }
@@ -85,6 +123,7 @@ export async function checkAvailability(
     minAvailable:     Math.max(0, minAvailable),
     totalRooms,
     fullyBookedDates,
+    hostBlockedDates,
   };
 }
 
@@ -100,22 +139,28 @@ export async function getMonthlyAvailability(
   const checkIn  = new Date(year, month, 1);
   const checkOut = new Date(year, month + 1, 1);
 
-  const totalRooms = await getTotalRooms(homestayId);
-  const bookedMap  = await getBookedRoomsPerDay(homestayId, checkIn, checkOut);
+  const [totalRooms, bookedMap, disabledMap] = await Promise.all([
+    getTotalRooms(homestayId),
+    getBookedRoomsPerDay(homestayId, checkIn, checkOut),
+    getDisabledRoomsPerDay(homestayId, checkIn, checkOut),
+  ]);
 
   const result = [];
   const cursor = new Date(checkIn);
 
   while (cursor < checkOut) {
-    const key    = cursor.toISOString().split('T')[0];
-    const booked = bookedMap.get(key) ?? 0;
-    const avail  = totalRooms - booked;
+    const key      = cursor.toISOString().split('T')[0];
+    const booked   = bookedMap.get(key)   ?? 0;
+    const disabled = disabledMap.get(key) ?? 0;
+    const avail    = totalRooms - booked - disabled;
 
     result.push({
-      date:      key,
-      available: Math.max(0, avail),
-      total:     totalRooms,
-      status:    avail <= 0
+      date:        key,
+      available:   Math.max(0, avail),
+      total:       totalRooms,
+      booked,
+      disabled,
+      status:      avail <= 0
         ? 'full'
         : avail <= Math.ceil(totalRooms * 0.3)
           ? 'limited'

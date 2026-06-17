@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma }            from '@/lib/prisma';
-import { verifyAccessToken } from '@/lib/auth';
+import { NextRequest, NextResponse }    from 'next/server';
+import { prisma }                      from '@/lib/prisma';
+import { verifyAccessToken }           from '@/lib/auth';
+import { notifyGuestBookingUpdate }    from '@/lib/email';
 
 // ── PATCH /api/bookings/[id] — host confirms/declines, guest cancels ──────
 export async function PATCH(
@@ -25,7 +26,10 @@ export async function PATCH(
 
     const booking = await prisma.booking.findUnique({
       where: { id },
-      include: { homestay: { select: { ownerId: true } } },
+      include: {
+        homestay: { select: { ownerId: true, name: true, owner: { select: { name: true } } } },
+        guest:    { select: { name: true, mobile: true, email: true } },
+      },
     });
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
@@ -51,6 +55,20 @@ export async function PATCH(
       where: { id },
       data:  { status: statusMap[action] as any },
     });
+
+    // Notify guest when host confirms or declines
+    if ((action === 'confirm' || action === 'decline') && booking.guest?.email) {
+      notifyGuestBookingUpdate({
+        guestEmail:   booking.guest.email,
+        guestName:    booking.guest.name ?? booking.guest.mobile ?? 'Guest',
+        homestayName: booking.homestay.name,
+        hostName:     booking.homestay.owner?.name ?? 'Host',
+        status:       statusMap[action] as 'confirmed' | 'cancelled',
+        checkIn:      booking.checkIn.toDateString(),
+        checkOut:     booking.checkOut.toDateString(),
+        bookingsUrl:  'https://bengalihomestay.com/my-bookings',
+      }).catch(console.error);
+    }
 
     return NextResponse.json({ success: true, booking: updated });
   } catch (err) {

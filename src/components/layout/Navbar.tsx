@@ -128,6 +128,11 @@ export default function Navbar() {
                             <p className="text-sm text-gray-700 font-medium">➕ Manage Rooms</p>
                             <p className="text-xs text-gray-400 mt-0.5">Add, edit or deactivate rooms</p>
                           </Link>
+                          <Link href="/host/availability" onClick={closeAll}
+                            className="block pl-8 pr-4 py-2 hover:bg-gray-100">
+                            <p className="text-sm text-gray-700 font-medium">📅 Room Availability</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Manage dates, vacation mode</p>
+                          </Link>
                         </div>
                       )}
                     </div>
@@ -191,6 +196,9 @@ export default function Navbar() {
                   {/* Inventory section */}
                   <Link href="/host/rooms" onClick={closeAll} className="block text-sm text-gray-700 py-2">
                     🛏️ Manage Rooms
+                  </Link>
+                  <Link href="/host/availability" onClick={closeAll} className="block text-sm text-gray-700 py-2">
+                    📅 Room Availability
                   </Link>
                 </>
               )}

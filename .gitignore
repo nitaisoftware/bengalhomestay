@@ -5,6 +5,8 @@ node_modules/
 *.log
 dist/
 .DS_Store
-"DATABASE_URL" 
-"npm" 
-"npx" 
+scripts/scraped-homestays.json
+bengalhomestay@*
+console.*
+next
+
