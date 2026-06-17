@@ -143,6 +143,14 @@ function MyBookingsContent() {
     const token = sessionStorage.getItem('access_token');
     if (!token) { router.push('/login?redirect=/my-bookings'); return; }
     fetchBookings(token);
+
+    // Auto-refresh every 60s so stepper advances when host confirms
+    const interval = setInterval(() => {
+      const t = sessionStorage.getItem('access_token');
+      if (t) fetchBookings(t);
+    }, 60_000);
+
+    return () => clearInterval(interval);
   }, []);
 
   async function fetchBookings(token: string) {
