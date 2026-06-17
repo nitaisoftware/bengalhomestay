@@ -43,8 +43,9 @@ export async function POST(req: NextRequest) {
           pricePerNight: Number(pricePerNight),
           minStayDays:   Number(minStayDays) || 1,
           maxStayDays:   Number(maxStayDays) || 30,
-          amenities:     amenities  ?? [],
-          status:        'pending_review',
+          amenities:      amenities  ?? [],
+          status:         'pending_review',
+          selfRegistered: true,
           ownerId,
           categories: categoryIds?.length
             ? { create: categoryIds.map((categoryId: string) => ({ categoryId })) }

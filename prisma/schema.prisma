@@ -124,6 +124,9 @@ model Homestay {
   isFeatured Boolean @default(false)
   isPremium  Boolean @default(false)
 
+  // Source — true only when registered by the host via the UI (not scraped/seeded)
+  selfRegistered Boolean @default(false)
+
   // Owner
   ownerId String
   owner   User   @relation(fields: [ownerId], references: [id])

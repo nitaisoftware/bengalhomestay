@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     if (!payload?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const homestays = await prisma.homestay.findMany({
-      where:   { ownerId: payload.userId },
+      where:   { ownerId: payload.userId, selfRegistered: true },
       orderBy: { createdAt: 'asc' },
       select:  { id: true, name: true, status: true, district: true },
     });

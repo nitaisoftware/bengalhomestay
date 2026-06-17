@@ -41,27 +41,39 @@ function StatusStepper({ status }: { status: string }) {
   if (status === 'cancelled' || status === 'no_show') return null;
   const current = stepIndex(status);
   return (
-    <div className="flex items-center gap-0 w-full my-3">
-      {STEPS.map((step, i) => (
-        <div key={step.key} className="flex items-center flex-1">
-          <div className="flex flex-col items-center flex-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all
-              ${i < current  ? 'bg-green-500 text-white' :
-                i === current ? 'bg-green-700 text-white ring-2 ring-green-200' :
-                                'bg-gray-100 text-gray-400'}`}>
-              {i < current ? '✓' : step.icon}
+    <div className="flex items-center w-full my-3">
+      {STEPS.map((step, i) => {
+        const done    = i < current;
+        const active  = i === current;
+        const pending = i > current;
+        return (
+          <div key={step.key} className="flex items-center flex-1">
+            <div className="flex flex-col items-center flex-1">
+              {/* Circle */}
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-base transition-all duration-300
+                ${done   ? 'bg-green-500 text-white shadow-sm' :
+                  active ? 'bg-green-700 text-white ring-4 ring-green-100 shadow-md' :
+                           'bg-gray-100 text-gray-300 border-2 border-gray-200'}`}>
+                {done   ? '✓' :
+                 active ? step.icon :
+                          <span className="text-xs font-bold text-gray-300">{i + 1}</span>}
+              </div>
+              {/* Label */}
+              <p className={`text-[10px] mt-1.5 text-center leading-tight font-medium
+                ${done   ? 'text-green-600' :
+                  active ? 'text-green-700 font-semibold' :
+                           'text-gray-300'}`}>
+                {step.label}
+              </p>
             </div>
-            <p className={`text-[10px] mt-1 text-center leading-tight
-              ${i === current ? 'text-green-700 font-semibold' : 'text-gray-400'}`}>
-              {step.label}
-            </p>
+            {/* Connector line */}
+            {i < STEPS.length - 1 && (
+              <div className={`h-0.5 flex-1 mx-1 mb-4 rounded transition-all duration-300
+                ${done ? 'bg-green-400' : 'bg-gray-200'}`} />
+            )}
           </div>
-          {i < STEPS.length - 1 && (
-            <div className={`h-0.5 flex-1 mx-1 mt-[-14px] rounded
-              ${i < current ? 'bg-green-400' : 'bg-gray-200'}`} />
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

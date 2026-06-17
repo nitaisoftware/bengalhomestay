@@ -18,9 +18,9 @@ export async function GET(req: NextRequest) {
 
     if (!homestayId) return NextResponse.json({ error: 'homestayId required' }, { status: 400 });
 
-    // Verify ownership
+    // Verify ownership — only self-registered homestays
     const homestay = await prisma.homestay.findFirst({
-      where: { id: homestayId, ownerId: payload.userId },
+      where: { id: homestayId, ownerId: payload.userId, selfRegistered: true },
     });
     if (!homestay) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
@@ -118,9 +118,9 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'homestayId, from, to required' }, { status: 400 });
     }
 
-    // Verify ownership
+    // Verify ownership — only self-registered homestays
     const homestay = await prisma.homestay.findFirst({
-      where:  { id: homestayId, ownerId: payload.userId },
+      where:  { id: homestayId, ownerId: payload.userId, selfRegistered: true },
       select: { id: true },
     });
     if (!homestay) return NextResponse.json({ error: 'Not found' }, { status: 404 });
