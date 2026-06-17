@@ -45,12 +45,14 @@ function fmt(d: string) {
 export default function HostDashboardPage() {
   const router = useRouter();
 
-  const [activeTab,  setActiveTab]  = useState<'overview' | 'inquiries' | 'rooms' | 'availability'>('overview');
-  const [data,       setData]       = useState<DashboardData | null>(null);
-  const [inquiries,  setInquiries]  = useState<Inquiry[]>([]);
-  const [inqLoading, setInqLoading] = useState(false);
-  const [loading,    setLoading]    = useState(true);
-  const [acting,     setActing]     = useState<string | null>(null);
+  const [activeTab,   setActiveTab]   = useState<'overview' | 'inquiries' | 'rooms' | 'availability'>('overview');
+  const [data,        setData]        = useState<DashboardData | null>(null);
+  const [inquiries,   setInquiries]   = useState<Inquiry[]>([]);
+  const [inqLoading,  setInqLoading]  = useState(false);
+  const [loading,     setLoading]     = useState(true);
+  const [acting,      setActing]      = useState<string | null>(null);
+  const [newCount,    setNewCount]    = useState(0);
+  const [toast,       setToast]       = useState<string | null>(null);
 
   const loadDashboard = useCallback((token: string) => {
     fetch('/api/owner/dashboard', { headers: { Authorization: `Bearer ${token}` } })
@@ -63,23 +65,47 @@ export default function HostDashboardPage() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  const loadInquiries = useCallback((token: string) => {
-    setInqLoading(true);
+  const loadInquiries = useCallback((token: string, silent = false) => {
+    if (!silent) setInqLoading(true);
     fetch('/api/bookings', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(d => setInquiries(d.bookings ?? []))
-      .finally(() => setInqLoading(false));
+      .then(d => {
+        const list: Inquiry[] = d.bookings ?? [];
+        setInquiries(prev => {
+          // Count new pending inquiries since last check
+          const prevIds = new Set(prev.map(i => i.id));
+          const fresh = list.filter(i => i.status === 'pending' && !prevIds.has(i.id));
+          if (fresh.length > 0) {
+            setNewCount(c => c + fresh.length);
+            setToast(`📬 ${fresh.length} new inquiry from ${fresh[0].guest.name ?? fresh[0].guest.mobile}`);
+            setTimeout(() => setToast(null), 5000);
+          }
+          return list;
+        });
+      })
+      .finally(() => { if (!silent) setInqLoading(false); });
   }, []);
 
   useEffect(() => {
     const token = sessionStorage.getItem('access_token');
     if (!token) { router.push('/host/register'); return; }
     loadDashboard(token);
-  }, [loadDashboard, router]);
+    // Initial load of inquiries for badge count
+    loadInquiries(token, true);
 
-  // Load inquiries when tab activated
+    // Poll every 30s for new inquiries
+    const interval = setInterval(() => {
+      const t = sessionStorage.getItem('access_token');
+      if (t) loadInquiries(t, true);
+    }, 30_000);
+
+    return () => clearInterval(interval);
+  }, [loadDashboard, loadInquiries, router]);
+
+  // Load inquiries when tab activated + clear new badge
   useEffect(() => {
     if (activeTab !== 'inquiries') return;
+    setNewCount(0);
     const token = sessionStorage.getItem('access_token');
     if (token) loadInquiries(token);
   }, [activeTab, loadInquiries]);
@@ -120,6 +146,14 @@ export default function HostDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Real-time toast */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-xl text-sm flex items-center gap-3 animate-fade-in">
+          <span>{toast}</span>
+          <button onClick={() => { setToast(null); setActiveTab('inquiries'); }}
+            className="text-green-400 font-medium hover:text-green-300 text-xs">View →</button>
+        </div>
+      )}
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
 
         {/* Header */}
@@ -155,6 +189,9 @@ export default function HostDashboardPage() {
                 <span className="ml-1.5 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   {pendingCount}
                 </span>
+              )}
+              {tab.key === 'inquiries' && newCount > 0 && (
+                <span className="ml-1 inline-flex w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               )}
             </button>
           ))}
